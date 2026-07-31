@@ -12,8 +12,6 @@ packages/*/dist
 .env.local
 build/
 .logs/
-release/
-release-mock/
 .t3
 .idea/
 apps/web/.playwright
@@ -25,11 +23,6 @@ __screenshots__/
 squashfs-root/
 .vercel
 .gstack/
-dist-electron/
-.electron-runtime/
-.showcase/
-apps/mobile/.showcase/
-artifacts/app-store/screenshots/
 native/**/target/
 node_modules/
 .alchemy/
