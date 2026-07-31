@@ -1,11 +1,9 @@
 import {
   CommandId,
   DEFAULT_MODEL,
-  DEFAULT_PROVIDER_INTERACTION_MODE,
   type ModelSelection,
   ProjectId,
   ProviderInstanceId,
-  ThreadId,
 } from "@t3tools/contracts";
 import * as Console from "effect/Console";
 import * as Context from "effect/Context";
@@ -186,66 +184,39 @@ export const resolveAutoBootstrapWelcomeTargets = Effect.gen(function* () {
   const path = yield* Path.Path;
 
   let bootstrapProjectId: ProjectId | undefined;
-  let bootstrapThreadId: ThreadId | undefined;
-
   if (serverConfig.autoBootstrapProjectFromCwd) {
     yield* Effect.gen(function* () {
       const existingProject = yield* projectionReadModelQuery.getActiveProjectByWorkspaceRoot(
         serverConfig.cwd,
       );
       let nextProjectId: ProjectId;
-      let nextProjectDefaultModelSelection: ModelSelection;
 
       if (Option.isNone(existingProject)) {
         const createdAt = DateTime.formatIso(yield* DateTime.now);
         nextProjectId = ProjectId.make(yield* randomUUID);
         const bootstrapProjectTitle = path.basename(serverConfig.cwd) || "project";
-        nextProjectDefaultModelSelection = getAutoBootstrapDefaultModelSelection();
         yield* orchestrationEngine.dispatch({
           type: "project.create",
           commandId: CommandId.make(yield* randomUUID),
           projectId: nextProjectId,
           title: bootstrapProjectTitle,
           workspaceRoot: serverConfig.cwd,
-          defaultModelSelection: nextProjectDefaultModelSelection,
+          defaultModelSelection: getAutoBootstrapDefaultModelSelection(),
           createdAt,
         });
       } else {
         nextProjectId = existingProject.value.id;
-        nextProjectDefaultModelSelection =
-          existingProject.value.defaultModelSelection ?? getAutoBootstrapDefaultModelSelection();
       }
 
-      const existingThreadId =
-        yield* projectionReadModelQuery.getFirstActiveThreadIdByProjectId(nextProjectId);
-      if (Option.isNone(existingThreadId)) {
-        const createdAt = DateTime.formatIso(yield* DateTime.now);
-        const createdThreadId = ThreadId.make(yield* randomUUID);
-        yield* orchestrationEngine.dispatch({
-          type: "thread.create",
-          commandId: CommandId.make(yield* randomUUID),
-          threadId: createdThreadId,
-          projectId: nextProjectId,
-          title: "New thread",
-          modelSelection: nextProjectDefaultModelSelection,
-          interactionMode: DEFAULT_PROVIDER_INTERACTION_MODE,
-          runtimeMode: "full-access",
-          branch: null,
-          worktreePath: null,
-          createdAt,
-        });
-        bootstrapProjectId = nextProjectId;
-        bootstrapThreadId = createdThreadId;
-      } else {
-        bootstrapProjectId = nextProjectId;
-        bootstrapThreadId = existingThreadId.value;
-      }
+      // A Grillme launch always starts at a fresh draft in the web client.
+      // Reusing or pre-creating a thread here would reopen a previous interview
+      // and would choose a provider before the user has made that decision.
+      bootstrapProjectId = nextProjectId;
     });
   }
 
   return {
     ...(bootstrapProjectId ? { bootstrapProjectId } : {}),
-    ...(bootstrapThreadId ? { bootstrapThreadId } : {}),
   } as const;
 });
 
@@ -374,7 +345,7 @@ export const make = Effect.gen(function* () {
             const bootstrapTargets = yield* resolveAutoBootstrapWelcomeTargets.pipe(
               Effect.provideService(Crypto.Crypto, crypto),
             );
-            if (!bootstrapTargets.bootstrapProjectId && !bootstrapTargets.bootstrapThreadId) {
+            if (!bootstrapTargets.bootstrapProjectId) {
               return;
             }
 
@@ -383,7 +354,6 @@ export const make = Effect.gen(function* () {
               cwd: welcomeBase.cwd,
               projectName: welcomeBase.projectName,
               bootstrapProjectId: bootstrapTargets.bootstrapProjectId,
-              bootstrapThreadId: bootstrapTargets.bootstrapThreadId,
             });
             yield* lifecycleEvents.publish({
               version: 1,
@@ -459,7 +429,7 @@ export const make = Effect.gen(function* () {
         const startupBrowserTarget = yield* resolveStartupBrowserTarget;
         if (serverConfig.mode !== "desktop") {
           yield* Effect.logInfo(
-            "Authentication required. Open T3 Code using the pairing URL.",
+            "Authentication required. Open Grillme using the pairing URL.",
           ).pipe(Effect.annotateLogs({ pairingUrl: startupBrowserTarget }));
         }
         yield* runStartupPhase("browser.open", maybeOpenBrowser(startupBrowserTarget));

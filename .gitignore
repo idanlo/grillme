@@ -12,7 +12,7 @@ packages/*/dist
 .env.local
 build/
 .logs/
-.t3
+.grillme
 .idea/
 apps/web/.playwright
 apps/web/playwright-report
