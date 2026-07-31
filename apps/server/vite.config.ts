@@ -26,7 +26,7 @@ export default mergeConfig(
       tasks: {
         build: {
           command: "node scripts/cli.ts build",
-          dependsOn: ["@grillme/web#build"],
+          dependsOn: ["@grillme/grillme#build"],
           cache: false,
         },
       },

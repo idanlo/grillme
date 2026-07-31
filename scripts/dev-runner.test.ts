@@ -79,7 +79,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
         assert.deepStrictEqual(getDevRunnerModeArgs("dev"), [
           "run",
           "--filter=@grillme/contracts",
-          "--filter=@grillme/web",
+          "--filter=@grillme/grillme",
           "--filter=t3",
           "--parallel",
           "dev",

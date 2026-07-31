@@ -74,13 +74,13 @@ const MODE_ARGS = {
   dev: [
     "run",
     "--filter=@grillme/contracts",
-    "--filter=@grillme/web",
+    "--filter=@grillme/grillme",
     "--filter=t3",
     "--parallel",
     "dev",
   ],
   "dev:server": ["run", "--filter=t3", "dev"],
-  "dev:web": ["run", "--filter=@grillme/web", "dev"],
+  "dev:web": ["run", "--filter=@grillme/grillme", "dev"],
 } as const satisfies Record<string, ReadonlyArray<string>>;
 
 type DevMode = keyof typeof MODE_ARGS;
@@ -338,7 +338,7 @@ export function createDevRunnerEnv({
     // HOST is Vite's bind address. An inherited one (an exported HOST, a
     // container, a `HOST=0.0.0.0 npm start` habit) would otherwise reach Vite
     // and pin its HMR socket to that address — see the `explicitHost` gate in
-    // apps/web/vite.config.ts. Over a shared origin that is invisible: the page
+    // apps/grillme/vite.config.ts. Over a shared origin that is invisible: the page
     // loads and only HMR quietly dials the wrong machine.
     delete output.HOST;
     if (mode === "dev" || mode === "dev:web") {

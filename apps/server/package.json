@@ -37,9 +37,9 @@
   "devDependencies": {
     "@effect/vitest": "catalog:",
     "@grillme/contracts": "workspace:*",
+    "@grillme/grillme": "workspace:*",
     "@grillme/shared": "workspace:*",
     "@grillme/tailscale": "workspace:*",
-    "@grillme/web": "workspace:*",
     "@types/bun": "1.3.14",
     "@types/node": "catalog:",
     "effect-acp": "workspace:*",

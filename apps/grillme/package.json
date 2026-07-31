@@ -1,0 +1,31 @@
+{
+  "name": "@grillme/grillme",
+  "version": "0.0.31",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview",
+    "typecheck": "tsgo --noEmit",
+    "test": "vp test run --passWithNoTests"
+  },
+  "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@grillme/client-runtime": "workspace:*",
+    "@grillme/contracts": "workspace:*",
+    "@grillme/shared": "workspace:*",
+    "effect": "catalog:",
+    "lucide-react": "^0.564.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.14",
+    "@types/react-dom": "~19.2.3",
+    "@vitejs/plugin-react": "^6.0.0",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

@@ -98,17 +98,17 @@ const buildCmd = Command.make(
         }),
       );
 
-      const webDist = path.join(repoRoot, "apps/web/dist");
+      const grillmeDist = path.join(repoRoot, "apps/grillme/dist");
       const clientTarget = path.join(serverDir, "dist/client");
 
-      if (yield* fs.exists(webDist)) {
-        yield* fs.copy(webDist, clientTarget);
-        yield* Effect.log("[cli] Bundled web app into dist/client");
+      if (yield* fs.exists(grillmeDist)) {
+        yield* fs.copy(grillmeDist, clientTarget);
+        yield* Effect.log("[cli] Bundled Grillme app into dist/client");
       } else {
-        yield* Effect.logWarning("[cli] Web dist not found — skipping client bundle.");
+        yield* Effect.logWarning("[cli] Grillme dist not found — skipping client bundle.");
       }
     }),
-).pipe(Command.withDescription("Build the server package (tsdown + bundle web client)."));
+).pipe(Command.withDescription("Build the server package (tsdown + bundle Grillme client)."));
 
 // ---------------------------------------------------------------------------
 // publish subcommand

@@ -336,7 +336,7 @@ function requestKindFromRequestType(requestType: unknown): PendingApproval["requ
   }
 }
 
-export function isStalePendingRequestFailureDetail(detail: string | undefined): boolean {
+function isStalePendingRequestFailureDetail(detail: string | undefined): boolean {
   const normalized = detail?.toLowerCase();
   if (!normalized) {
     return false;
@@ -408,7 +408,7 @@ export function derivePendingApprovals(
   );
 }
 
-export function parseUserInputQuestions(
+function parseUserInputQuestions(
   payload: Record<string, unknown> | null,
 ): ReadonlyArray<UserInputQuestion> | null {
   const questions = payload?.questions;
@@ -1296,7 +1296,7 @@ function extractChangedFiles(payload: Record<string, unknown> | null): string[] 
   return changedFiles;
 }
 
-export function compareActivitiesByOrder(
+function compareActivitiesByOrder(
   left: OrchestrationThreadActivity,
   right: OrchestrationThreadActivity,
 ): number {

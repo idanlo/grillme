@@ -9,10 +9,12 @@ npx grillme
 The npm package is not published yet. To run the current source build:
 
 ```bash
-vp install
-vp run --filter t3 build
-node apps/server/dist/bin.mjs
+pnpm install
+pnpm dev
 ```
+
+That starts the server and the dedicated client in `apps/grillme`. The original T3Code web app
+remains available as a reference with `pnpm dev:reference`.
 
 ## How a grilling session works
 
@@ -36,10 +38,11 @@ This is an early fork. The server workspace intentionally keeps its internal `t3
 Focused checks:
 
 ```bash
-vp test run apps/web/src/grill apps/server/src/bin.test.ts apps/server/src/serverRuntimeStartup.test.ts
-vp run --filter @grillme/web typecheck
-(cd apps/server && vp run typecheck)
-vp run --filter t3 build
+pnpm --filter @grillme/grillme test
+pnpm --filter @grillme/grillme typecheck
+pnpm --filter @grillme/web typecheck
+pnpm --filter t3 typecheck
+pnpm exec vp run --filter t3 build
 ```
 
 See [the implementation plan](./docs/grillme/implementation-plan.md) and [upstream sync notes](./docs/grillme/upstream-sync.md).

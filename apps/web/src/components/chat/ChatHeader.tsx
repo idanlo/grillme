@@ -6,7 +6,7 @@ import {
   type ThreadId,
 } from "@grillme/contracts";
 import { scopeThreadRef } from "@grillme/client-runtime/environment";
-import { memo, type ReactNode } from "react";
+import { memo } from "react";
 import GitActionsControl from "../GitActionsControl";
 import { type DraftId } from "~/composerDraftStore";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
@@ -42,7 +42,6 @@ interface ChatHeaderProps {
     input: NewProjectScriptInput,
   ) => Promise<ProjectScriptActionResult>;
   onDeleteProjectScript: (scriptId: string) => Promise<ProjectScriptActionResult>;
-  actions?: ReactNode;
 }
 
 export function shouldShowOpenInPicker(input: {
@@ -76,7 +75,6 @@ export const ChatHeader = memo(function ChatHeader({
   onAddProjectScript,
   onUpdateProjectScript,
   onDeleteProjectScript,
-  actions,
 }: ChatHeaderProps) {
   const primaryEnvironmentId = usePrimaryEnvironmentId();
   const fileScripts = useT3ProjectFileScripts(
@@ -142,7 +140,6 @@ export const ChatHeader = memo(function ChatHeader({
           rightPanelOpen ? "pr-0" : "pr-16",
         )}
       >
-        {actions}
         {activeProjectScripts && (
           <ProjectScriptsControl
             scripts={activeProjectScripts}

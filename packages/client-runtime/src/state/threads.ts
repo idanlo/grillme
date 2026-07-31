@@ -32,6 +32,8 @@ import {
   type EnvironmentThreadStatus,
 } from "./threadState.ts";
 
+export { applyThreadDetailEvent } from "./threadReducer.ts";
+
 function statusWithoutLiveData(data: Option.Option<OrchestrationThread>): EnvironmentThreadStatus {
   return Option.isSome(data) ? "cached" : "empty";
 }

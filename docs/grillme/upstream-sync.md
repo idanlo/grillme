@@ -9,14 +9,15 @@ git remote add upstream https://github.com/pingdotgg/t3code.git
 git fetch upstream
 ```
 
-For each sync, merge the selected upstream commit into a dedicated branch, preserve Grillme's first-turn protocol and local-only CLI boundaries, then run the focused provider, server-startup, web, and package-build checks.
+For each sync, merge the selected upstream commit into a dedicated branch, resolve upstream web changes inside the reference app, then port only relevant provider/runtime behavior into Grillme's dedicated client.
 
 Prefer small conflict resolutions at these boundaries:
 
 - `apps/server/src/bin.ts` and CLI configuration
 - `apps/server/src/serverRuntimeStartup.ts`
 - `apps/server/scripts/cli.ts`
-- `apps/web/src/components/ChatView.tsx`
-- `apps/web/src/grill/`
+- `apps/grillme/src/rpc.ts`
+- `apps/grillme/src/App.tsx`
+- `apps/grillme/src/protocol.ts`
 
-Avoid renaming internal workspace packages. This keeps upstream provider changes reviewable and prevents churn in Effect service keys.
+Keep mechanical package-scope migration to `@grillme/*` separate from behavioral conflict resolution. Do not rename the unscoped server workspace package unless the deterministic Effect service keys are migrated in the same change.

@@ -141,8 +141,6 @@ import {
 import { RightPanelTabs } from "./RightPanelTabs";
 import { DiffWorkerPoolProvider } from "./DiffWorkerPoolProvider";
 import { BranchToolbar } from "./BranchToolbar";
-import { buildGrillmeFirstTurn, displayGrillmeUserMessage } from "../grill/protocol";
-import { GrillHandoffButton } from "../grill/GrillHandoffButton";
 import { resolveShortcutCommand, shortcutLabelForCommand } from "../keybindings";
 import PlanSidebar from "./PlanSidebar";
 import ThreadTerminalDrawer from "./ThreadTerminalDrawer";
@@ -2235,17 +2233,11 @@ function ChatViewContent(props: ChatViewProps) {
   const displayServerMessages = useMemo<ReadonlyArray<ChatMessage>>(() => {
     if (!serverMessages) return [];
     return serverMessages.map((message) => {
-      const displayText =
-        message.role === "user" ? displayGrillmeUserMessage(message.text) : message.text;
       if (!message.attachments || message.attachments.length === 0) {
-        if (displayText !== message.text) {
-          return { ...message, text: displayText };
-        }
         return message;
       }
       return {
         ...message,
-        text: displayText,
         attachments: message.attachments.map((attachment) => {
           const previewUrl = serverAttachmentUrlById.get(attachment.id);
           return previewUrl ? { ...attachment, previewUrl } : attachment;
@@ -2389,10 +2381,6 @@ function ChatViewContent(props: ChatViewProps) {
     }
     return [...serverMessagesWithPreviewHandoff, ...pendingMessages];
   }, [attachmentPreviewHandoffByMessageId, displayServerMessages, optimisticUserMessages]);
-  const grillPrompt = useMemo(
-    () => timelineMessages.find((message) => message.role === "user")?.text ?? "",
-    [timelineMessages],
-  );
   const timelineEntries = useMemo(
     () =>
       deriveTimelineEntries(timelineMessages, activeThread?.proposedPlans ?? [], workLogEntries),
@@ -4720,23 +4708,13 @@ function ChatViewContent(props: ChatViewProps) {
     );
     const messageIdForSend = newMessageId();
     const messageCreatedAt = new Date().toISOString();
-    const outgoingPromptText = messageTextForSend || IMAGE_ONLY_BOOTSTRAP_PROMPT;
     const outgoingMessageText = formatOutgoingPrompt({
       provider: ctxSelectedProvider,
       model: ctxSelectedModel,
       models: ctxSelectedProviderModels,
       effort: ctxSelectedPromptEffort,
-      text: outgoingPromptText,
+      text: messageTextForSend || IMAGE_ONLY_BOOTSTRAP_PROMPT,
     });
-    const providerMessageText = isFirstMessage
-      ? formatOutgoingPrompt({
-          provider: ctxSelectedProvider,
-          model: ctxSelectedModel,
-          models: ctxSelectedProviderModels,
-          effort: ctxSelectedPromptEffort,
-          text: buildGrillmeFirstTurn(outgoingPromptText),
-        })
-      : outgoingMessageText;
     const turnAttachmentsPromise = Promise.all(
       composerImagesSnapshot.map(async (image) => ({
         type: "image" as const,
@@ -4901,7 +4879,7 @@ function ChatViewContent(props: ChatViewProps) {
           message: {
             messageId: messageIdForSend,
             role: "user",
-            text: providerMessageText,
+            text: outgoingMessageText,
             attachments: turnAttachmentsResult.value,
           },
           modelSelection: ctxSelectedModelSelection,
@@ -5798,16 +5776,6 @@ function ChatViewContent(props: ChatViewProps) {
             onAddProjectScript={saveProjectScript}
             onUpdateProjectScript={updateProjectScript}
             onDeleteProjectScript={deleteProjectScript}
-            actions={
-              activeProject ? (
-                <GrillHandoffButton
-                  environmentId={activeProject.environmentId}
-                  workspaceRoot={activeProject.workspaceRoot}
-                  prompt={grillPrompt}
-                  activities={threadActivities}
-                />
-              ) : null
-            }
           />
         </header>
 
