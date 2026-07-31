@@ -5,7 +5,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import { Command } from "effect/unstable/cli";
 
-import * as NetService from "@t3tools/shared/Net";
+import * as NetService from "@grillme/shared/Net";
 import packageJson from "../package.json" with { type: "json" };
 import { grillmeServerCommandFlags } from "./cli/config.ts";
 import { runServerCommand } from "./cli/server.ts";

@@ -37,7 +37,7 @@ Focused checks:
 
 ```bash
 vp test run apps/web/src/grill apps/server/src/bin.test.ts apps/server/src/serverRuntimeStartup.test.ts
-vp run --filter @t3tools/web typecheck
+vp run --filter @grillme/web typecheck
 (cd apps/server && vp run typecheck)
 vp run --filter t3 build
 ```

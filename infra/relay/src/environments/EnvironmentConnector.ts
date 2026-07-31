@@ -4,8 +4,8 @@ import {
   EnvironmentHttpForbiddenError,
   EnvironmentHttpInternalServerError,
   EnvironmentHttpUnauthorizedError,
-} from "@t3tools/contracts";
-import { makeEnvironmentHttpApiClient } from "@t3tools/client-runtime/rpc";
+} from "@grillme/contracts";
+import { makeEnvironmentHttpApiClient } from "@grillme/client-runtime/rpc";
 import {
   RelayCloudEnvironmentHealthProofPayload,
   RelayEnvironmentHealthResponse,
@@ -16,7 +16,7 @@ import {
   RelayEnvironmentConnectNotAuthorizedReason,
   type RelayEnvironmentConnectResponse,
   type RelayEnvironmentStatusResponse,
-} from "@t3tools/contracts/relay";
+} from "@grillme/contracts/relay";
 import {
   normalizeRelayIssuer,
   RELAY_HEALTH_REQUEST_TYP,
@@ -25,8 +25,8 @@ import {
   RELAY_MINT_RESPONSE_TYP,
   signRelayJwt,
   verifyRelayJwt,
-} from "@t3tools/shared/relayJwt";
-import { stableStringify } from "@t3tools/shared/relaySigning";
+} from "@grillme/shared/relayJwt";
+import { stableStringify } from "@grillme/shared/relaySigning";
 import * as Context from "effect/Context";
 import * as Crypto from "effect/Crypto";
 import * as DateTime from "effect/DateTime";

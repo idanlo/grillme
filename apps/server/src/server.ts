@@ -1,4 +1,4 @@
-import { EnvironmentHttpApi } from "@t3tools/contracts";
+import { EnvironmentHttpApi } from "@grillme/contracts";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -106,9 +106,9 @@ import {
   persistServerRuntimeState,
 } from "./serverRuntimeState.ts";
 import { orchestrationHttpApiLayer } from "./orchestration/http.ts";
-import * as NetService from "@t3tools/shared/Net";
-import * as RelayClient from "@t3tools/shared/relayClient";
-import { disableTailscaleServe, ensureTailscaleServe } from "@t3tools/tailscale";
+import * as NetService from "@grillme/shared/Net";
+import * as RelayClient from "@grillme/shared/relayClient";
+import { disableTailscaleServe, ensureTailscaleServe } from "@grillme/tailscale";
 
 // Effect's default preemptive shutdown waits 20s before finalizing request scopes.
 // T3's primary transport is long-lived WebSocket RPC, whose Effect scope finalizer

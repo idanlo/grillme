@@ -20,8 +20,8 @@ import type {
   VcsStatusRemoteResult,
   VcsStatusResult,
   VcsStatusStreamEvent,
-} from "@t3tools/contracts";
-import { GitManagerError } from "@t3tools/contracts";
+} from "@grillme/contracts";
+import { GitManagerError } from "@grillme/contracts";
 
 import * as VcsStatusBroadcaster from "./VcsStatusBroadcaster.ts";
 import * as BackgroundPolicy from "../background/BackgroundPolicy.ts";

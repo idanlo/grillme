@@ -8,13 +8,13 @@ import {
   type ServerSelfUpdateInput,
   type ServerSelfUpdateProgressStage,
   type ServerSelfUpdateResult,
-} from "@t3tools/contracts";
+} from "@grillme/contracts";
 import {
   HostProcessArguments,
   HostProcessEnvironment,
   HostProcessExecutablePath,
   HostProcessPlatform,
-} from "@t3tools/shared/hostProcess";
+} from "@grillme/shared/hostProcess";
 import * as NodeChildProcess from "node:child_process";
 import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";

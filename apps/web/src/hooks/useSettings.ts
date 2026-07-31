@@ -16,15 +16,15 @@ import {
   type EnvironmentId,
   ServerSettings,
   type ServerSettingsPatch,
-} from "@t3tools/contracts";
+} from "@grillme/contracts";
 import {
   type ClientSettingsPatch,
   type ClientSettings,
   DEFAULT_CLIENT_SETTINGS,
   type EnvironmentIdentificationMode,
   type UnifiedSettings,
-} from "@t3tools/contracts/settings";
-import { safeErrorLogAttributes } from "@t3tools/client-runtime/errors";
+} from "@grillme/contracts/settings";
+import { safeErrorLogAttributes } from "@grillme/client-runtime/errors";
 import { APP_STAGE_LABEL } from "~/branding";
 import { resolveSidebarV2Enabled } from "~/branding.logic";
 import { ensureLocalApi } from "~/localApi";

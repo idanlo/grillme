@@ -31,10 +31,10 @@ import {
   type TerminalSessionStatus,
   type TerminalSummary,
   type TerminalWriteInput,
-} from "@t3tools/contracts";
-import { makeKeyedCoalescingWorker } from "@t3tools/shared/KeyedCoalescingWorker";
-import { HostProcessPlatform } from "@t3tools/shared/hostProcess";
-import { getTerminalLabel } from "@t3tools/shared/terminalLabels";
+} from "@grillme/contracts";
+import { makeKeyedCoalescingWorker } from "@grillme/shared/KeyedCoalescingWorker";
+import { HostProcessPlatform } from "@grillme/shared/hostProcess";
+import { getTerminalLabel } from "@grillme/shared/terminalLabels";
 import * as DateTime from "effect/DateTime";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";

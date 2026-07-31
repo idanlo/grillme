@@ -1,9 +1,9 @@
-import type { EnvironmentId, ServerSelfUpdateCapability } from "@t3tools/contracts";
-import type { ServerUpdateState } from "@t3tools/client-runtime/state/server";
+import type { EnvironmentId, ServerSelfUpdateCapability } from "@grillme/contracts";
+import type { ServerUpdateState } from "@grillme/client-runtime/state/server";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@grillme/client-runtime/state/runtime";
 import { CheckIcon } from "lucide-react";
 
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";

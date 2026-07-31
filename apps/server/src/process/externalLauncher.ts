@@ -16,9 +16,9 @@ import {
   ExternalLauncherUnsupportedEditorError,
   type EditorId,
   type LaunchEditorInput,
-} from "@t3tools/contracts";
-import { HostProcessPlatform } from "@t3tools/shared/hostProcess";
-import { isCommandAvailable, resolveSpawnCommand } from "@t3tools/shared/shell";
+} from "@grillme/contracts";
+import { HostProcessPlatform } from "@grillme/shared/hostProcess";
+import { isCommandAvailable, resolveSpawnCommand } from "@grillme/shared/shell";
 import * as Config from "effect/Config";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
@@ -42,7 +42,7 @@ export {
   ExternalLauncherUnknownEditorError,
   ExternalLauncherUnsupportedEditorError,
   isExternalLauncherError,
-} from "@t3tools/contracts";
+} from "@grillme/contracts";
 export type { LaunchEditorInput };
 interface EditorLaunch {
   readonly editor: EditorId;

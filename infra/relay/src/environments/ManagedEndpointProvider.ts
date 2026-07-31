@@ -13,7 +13,7 @@ import type {
   RelayManagedEndpoint,
   RelayManagedEndpointOrigin,
   RelayManagedEndpointRuntimeConfig,
-} from "@t3tools/contracts/relay";
+} from "@grillme/contracts/relay";
 
 import * as RelayConfiguration from "../Config.ts";
 import {

@@ -10,27 +10,27 @@ the task commands.
 - `apps/server` (`t3`): the execution runtime and the published CLI. Owns orchestration, provider
   drivers, checkpointing, VCS, terminals, filesystem access, auth, and the HTTP + WebSocket surface.
   Also serves the built web app.
-- `apps/web` (`@t3tools/web`): React + Vite UI. Consumes the shared client runtime and adds routing,
+- `apps/web` (`@grillme/web`): React + Vite UI. Consumes the shared client runtime and adds routing,
   components, and web-specific platform layers.
-- `apps/desktop` (`@t3tools/desktop`): Electron shell. Supervises a desktop-scoped `t3` backend,
+- `apps/desktop` (`@grillme/desktop`): Electron shell. Supervises a desktop-scoped `t3` backend,
   loads the web bundle over the `t3code://` protocol, and owns SSH-managed remote environments.
-- `apps/mobile` (`@t3tools/mobile`): Expo/React Native client. Same client runtime composition as
+- `apps/mobile` (`@grillme/mobile`): Expo/React Native client. Same client runtime composition as
   web, different platform layer and UI.
-- `apps/marketing` (`@t3tools/marketing`): Astro marketing site.
+- `apps/marketing` (`@grillme/marketing`): Astro marketing site.
 
 ## packages
 
-- `packages/contracts` (`@t3tools/contracts`): shared Effect Schema definitions. RPC group,
+- `packages/contracts` (`@grillme/contracts`): shared Effect Schema definitions. RPC group,
   orchestration commands/events/read model, auth scopes, environment descriptors, settings.
-- `packages/shared` (`@t3tools/shared`): framework-agnostic utilities used by server and clients
+- `packages/shared` (`@grillme/shared`): framework-agnostic utilities used by server and clients
   (`DrainableWorker`, git and source-control helpers, relay auth and signing, DPoP, semver, logging,
   observability, and more).
-- `packages/client-runtime` (`@t3tools/client-runtime`): connection lifecycle, authorization, RPC
+- `packages/client-runtime` (`@grillme/client-runtime`): connection lifecycle, authorization, RPC
   session, environment registry, and Atom-based domain state shared by web and mobile. See its
   [README](../../packages/client-runtime/README.md).
-- `packages/ssh` (`@t3tools/ssh`): SSH config parsing, auth prompts, command execution, and the
+- `packages/ssh` (`@grillme/ssh`): SSH config parsing, auth prompts, command execution, and the
   tunnel/environment manager behind desktop-managed SSH environments.
-- `packages/tailscale` (`@t3tools/tailscale`): Tailscale CLI wrapper, including the
+- `packages/tailscale` (`@grillme/tailscale`): Tailscale CLI wrapper, including the
   `ensureTailscaleServe` / `disableTailscaleServe` serve lifecycle the server drives.
 - `packages/effect-acp` (`effect-acp`): Effect client and agent implementation of the Agent Client
   Protocol, used by ACP-speaking provider drivers.
@@ -56,8 +56,8 @@ the task commands.
 
 ## Import conventions
 
-`@t3tools/shared` and `@t3tools/client-runtime` use explicit subpath exports with no barrel index and
-no root export. Import the narrow path (`@t3tools/shared/DrainableWorker`,
-`@t3tools/client-runtime/state/threads`) rather than the package root. Files that are not exported
-are implementation details. `@t3tools/contracts` does export a root alongside `./settings` and
+`@grillme/shared` and `@grillme/client-runtime` use explicit subpath exports with no barrel index and
+no root export. Import the narrow path (`@grillme/shared/DrainableWorker`,
+`@grillme/client-runtime/state/threads`) rather than the package root. Files that are not exported
+are implementation details. `@grillme/contracts` does export a root alongside `./settings` and
 `./relay`.

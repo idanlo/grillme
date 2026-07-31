@@ -4,7 +4,7 @@ import {
   type ModelSelection,
   ProjectId,
   ProviderInstanceId,
-} from "@t3tools/contracts";
+} from "@grillme/contracts";
 import * as Console from "effect/Console";
 import * as Context from "effect/Context";
 import * as Crypto from "effect/Crypto";

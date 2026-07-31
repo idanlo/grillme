@@ -1,4 +1,4 @@
-import type { DesktopAppBranding } from "@t3tools/contracts";
+import type { DesktopAppBranding } from "@grillme/contracts";
 import { formatAppDisplayName } from "./branding.logic";
 
 function readInjectedDesktopAppBranding(): DesktopAppBranding | null {

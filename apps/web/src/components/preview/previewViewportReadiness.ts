@@ -1,4 +1,4 @@
-import type { PreviewRenderedViewportSize, PreviewViewportSetting } from "@t3tools/contracts";
+import type { PreviewRenderedViewportSize, PreviewViewportSetting } from "@grillme/contracts";
 
 import { browserViewportSettingKey } from "~/browser/browserViewportLayout";
 

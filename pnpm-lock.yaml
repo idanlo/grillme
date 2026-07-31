@@ -129,16 +129,16 @@ importers:
       '@effect/vitest':
         specifier: 4.0.0-beta.102
         version: 4.0.0-beta.102(patch_hash=a607339aab944136a084a05f159aa0f5a69776934d4b835dab8f9992f1c13425)(effect@4.0.0-beta.102(patch_hash=71215759e1ac0a7f65d7b75d816986687ae6c3a6cba02d928d184ca71790d488))
-      '@t3tools/contracts':
+      '@grillme/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@t3tools/shared':
+      '@grillme/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@t3tools/tailscale':
+      '@grillme/tailscale':
         specifier: workspace:*
         version: link:../../packages/tailscale
-      '@t3tools/web':
+      '@grillme/web':
         specifier: workspace:*
         version: link:../web
       '@types/bun':
@@ -192,6 +192,15 @@ importers:
       '@formkit/auto-animate':
         specifier: ^0.9.0
         version: 0.9.0
+      '@grillme/client-runtime':
+        specifier: workspace:*
+        version: link:../../packages/client-runtime
+      '@grillme/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@grillme/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@legendapp/list':
         specifier: 3.2.0
         version: 3.2.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -204,15 +213,6 @@ importers:
       '@pierre/trees':
         specifier: 1.0.0-beta.4
         version: 1.0.0-beta.4(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@t3tools/client-runtime':
-        specifier: workspace:*
-        version: link:../../packages/client-runtime
-      '@t3tools/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@t3tools/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@tanstack/react-pacer':
         specifier: ^0.19.4
         version: 0.19.4(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -316,21 +316,21 @@ importers:
       '@effect/sql-pg':
         specifier: 4.0.0-beta.102
         version: 4.0.0-beta.102(effect@4.0.0-beta.102(patch_hash=71215759e1ac0a7f65d7b75d816986687ae6c3a6cba02d928d184ca71790d488))
+      '@grillme/client-runtime':
+        specifier: workspace:*
+        version: link:../../packages/client-runtime
+      '@grillme/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@grillme/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@noble/curves':
         specifier: 'catalog:'
         version: 1.9.1
       '@noble/hashes':
         specifier: 'catalog:'
         version: 1.8.0
-      '@t3tools/client-runtime':
-        specifier: workspace:*
-        version: link:../../packages/client-runtime
-      '@t3tools/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@t3tools/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       alchemy:
         specifier: 2.0.0-beta.65
         version: 2.0.0-beta.65(249551d75ad3792c0b22cd2754b25266)
@@ -384,10 +384,10 @@ importers:
 
   packages/client-runtime:
     dependencies:
-      '@t3tools/contracts':
+      '@grillme/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@grillme/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -460,15 +460,15 @@ importers:
 
   packages/shared:
     dependencies:
+      '@grillme/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@noble/curves':
         specifier: 'catalog:'
         version: 1.9.1
       '@noble/hashes':
         specifier: 'catalog:'
         version: 1.8.0
-      '@t3tools/contracts':
-        specifier: workspace:*
-        version: link:../contracts
       effect:
         specifier: 4.0.0-beta.102
         version: 4.0.0-beta.102(patch_hash=71215759e1ac0a7f65d7b75d816986687ae6c3a6cba02d928d184ca71790d488)
@@ -494,10 +494,10 @@ importers:
 
   packages/ssh:
     dependencies:
-      '@t3tools/contracts':
+      '@grillme/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@grillme/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -522,7 +522,7 @@ importers:
       '@effect/platform-node':
         specifier: 4.0.0-beta.102
         version: 4.0.0-beta.102(patch_hash=cae7efcda6fd29f4db2efd357cb7dc6c41cb6adc957901d437e13ed1f3c017f0)(bufferutil@4.1.0)(effect@4.0.0-beta.102(patch_hash=71215759e1ac0a7f65d7b75d816986687ae6c3a6cba02d928d184ca71790d488))(ioredis@5.11.0)(utf-8-validate@6.0.6)
-      '@t3tools/shared':
+      '@grillme/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -544,13 +544,13 @@ importers:
       '@effect/platform-node':
         specifier: 4.0.0-beta.102
         version: 4.0.0-beta.102(patch_hash=cae7efcda6fd29f4db2efd357cb7dc6c41cb6adc957901d437e13ed1f3c017f0)(bufferutil@4.1.0)(effect@4.0.0-beta.102(patch_hash=71215759e1ac0a7f65d7b75d816986687ae6c3a6cba02d928d184ca71790d488))(ioredis@5.11.0)(utf-8-validate@6.0.6)
-      '@t3tools/contracts':
+      '@grillme/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
-      '@t3tools/shared':
+      '@grillme/shared':
         specifier: workspace:*
         version: link:../packages/shared
-      '@t3tools/tailscale':
+      '@grillme/tailscale':
         specifier: workspace:*
         version: link:../packages/tailscale
       effect:

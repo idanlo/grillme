@@ -1,4 +1,4 @@
-import type { DesktopEnvironmentBootstrap } from "@t3tools/contracts";
+import type { DesktopEnvironmentBootstrap } from "@grillme/contracts";
 import { useEffect, useState } from "react";
 
 import { readDesktopSecondaryBootstraps } from "./desktopLocal";

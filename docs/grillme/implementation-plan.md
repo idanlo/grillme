@@ -33,4 +33,4 @@ Baseline: `pingdotgg/t3code` at `a041981276b4c789fed8132e3b8a320749bf25e8`.
 
 Keep the server provider adapters, contracts, client runtime, orchestration/event log, and workspace-confined file RPC. Put Grillme-specific frontend behavior under `apps/web/src/grill/` and keep integration changes in the existing chat route thin until the replacement shell is proven.
 
-Internal `@t3tools/*` names and the server workspace name remain unchanged for now. Product-visible names, runtime storage, the executable, and generated npm metadata use Grillme.
+Internal `@grillme/*` names and the server workspace name remain unchanged for now. Product-visible names, runtime storage, the executable, and generated npm metadata use Grillme.

@@ -1,5 +1,5 @@
-import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { ThreadId } from "@t3tools/contracts";
+import { scopedThreadKey, scopeThreadRef } from "@grillme/client-runtime/environment";
+import { ThreadId } from "@grillme/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import { collectActiveTerminalUiThreadKeys } from "./terminalUiStateCleanup";

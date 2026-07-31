@@ -1,4 +1,4 @@
-import type { ProjectScript } from "@t3tools/contracts";
+import type { ProjectScript } from "@grillme/contracts";
 
 interface ProjectScriptRuntimeEnvInput {
   project: {

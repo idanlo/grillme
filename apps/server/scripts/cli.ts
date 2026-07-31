@@ -11,9 +11,9 @@ import { Command, Flag } from "effect/unstable/cli";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 
 import { resolveCatalogDependencies } from "../../../scripts/lib/resolve-catalog.ts";
-import { fromJsonStringPretty } from "@t3tools/shared/schemaJson";
-import { fromYaml } from "@t3tools/shared/schemaYaml";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
+import { fromJsonStringPretty } from "@grillme/shared/schemaJson";
+import { fromYaml } from "@grillme/shared/schemaYaml";
+import { resolveSpawnCommand } from "@grillme/shared/shell";
 import serverPackageJson from "../package.json" with { type: "json" };
 import { ServerCliBuildAssetMissingError, ServerCliCommandExitError } from "./cliErrors.ts";
 

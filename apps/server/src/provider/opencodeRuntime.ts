@@ -1,6 +1,6 @@
 import * as NodeURL from "node:url";
 
-import type { ChatAttachment, ProviderApprovalDecision, RuntimeMode } from "@t3tools/contracts";
+import type { ChatAttachment, ProviderApprovalDecision, RuntimeMode } from "@grillme/contracts";
 import {
   createOpencodeClient,
   type Agent,
@@ -31,9 +31,9 @@ import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 
 import { isWindowsCommandNotFound } from "../processRunner.ts";
 import { collectStreamAsString } from "./providerSnapshot.ts";
-import * as NetService from "@t3tools/shared/Net";
-import { HostProcessPlatform } from "@t3tools/shared/hostProcess";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
+import * as NetService from "@grillme/shared/Net";
+import { HostProcessPlatform } from "@grillme/shared/hostProcess";
+import { resolveSpawnCommand } from "@grillme/shared/shell";
 const encodeUnknownJsonStringExit = Schema.encodeUnknownExit(Schema.UnknownFromJsonString);
 const OPENCODE_EMPTY_CONFIG_CONTENT = "{}";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@t3tools/client-runtime",
+  "name": "@grillme/client-runtime",
   "private": true,
   "type": "module",
   "exports": {
@@ -145,8 +145,8 @@
     "test": "vp test run"
   },
   "dependencies": {
-    "@t3tools/contracts": "workspace:*",
-    "@t3tools/shared": "workspace:*",
+    "@grillme/contracts": "workspace:*",
+    "@grillme/shared": "workspace:*",
     "effect": "catalog:"
   },
   "devDependencies": {

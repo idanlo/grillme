@@ -5,7 +5,7 @@ import {
   ProviderInstanceId,
   ThreadId,
   TurnId,
-} from "@t3tools/contracts";
+} from "@grillme/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import type { Thread, ThreadShell } from "../types";

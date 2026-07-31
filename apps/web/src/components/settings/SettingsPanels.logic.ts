@@ -7,13 +7,13 @@ import type {
   ServerSettings,
   SidebarProjectGroupingMode,
   UnifiedSettings,
-} from "@t3tools/contracts";
-import { DEFAULT_UNIFIED_SETTINGS } from "@t3tools/contracts/settings";
+} from "@grillme/contracts";
+import { DEFAULT_UNIFIED_SETTINGS } from "@grillme/contracts/settings";
 import {
   normalizeBackgroundActivitySettings,
   normalizeServerBackgroundActivitySettings,
   resolveServerBackgroundActivitySettings,
-} from "@t3tools/shared/backgroundActivitySettings";
+} from "@grillme/shared/backgroundActivitySettings";
 import * as Equal from "effect/Equal";
 
 export function isProjectGroupingEnabled(mode: SidebarProjectGroupingMode): boolean {

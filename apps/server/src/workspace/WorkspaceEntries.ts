@@ -18,10 +18,10 @@ import type {
   ProjectSearchContentsResult,
   ProjectSearchEntriesInput,
   ProjectSearchEntriesResult,
-} from "@t3tools/contracts";
-import { HostProcessPlatform } from "@t3tools/shared/hostProcess";
-import { isExplicitRelativePath, isWindowsAbsolutePath } from "@t3tools/shared/path";
-import { normalizeSearchQuery } from "@t3tools/shared/searchRanking";
+} from "@grillme/contracts";
+import { HostProcessPlatform } from "@grillme/shared/hostProcess";
+import { isExplicitRelativePath, isWindowsAbsolutePath } from "@grillme/shared/path";
+import { normalizeSearchQuery } from "@grillme/shared/searchRanking";
 
 import * as WorkspacePaths from "./WorkspacePaths.ts";
 import * as WorkspaceSearchIndex from "./WorkspaceSearchIndex.ts";

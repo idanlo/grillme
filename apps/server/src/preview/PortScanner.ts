@@ -11,10 +11,10 @@
  * Polling is reference-counted via scoped `retain`. A single layer-scoped fiber
  * polls forever, but each tick is a no-op when the retain count is zero.
  */
-import { ThreadId, type DiscoveredLocalServer } from "@t3tools/contracts";
-import { HostProcessPlatform } from "@t3tools/shared/hostProcess";
-import * as Net from "@t3tools/shared/Net";
-import { LSOF_LOCAL_HOST_TOKENS } from "@t3tools/shared/preview";
+import { ThreadId, type DiscoveredLocalServer } from "@grillme/contracts";
+import { HostProcessPlatform } from "@grillme/shared/hostProcess";
+import * as Net from "@grillme/shared/Net";
+import { LSOF_LOCAL_HOST_TOKENS } from "@grillme/shared/preview";
 import * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";

@@ -1,5 +1,5 @@
 {
-  "name": "@t3tools/scripts",
+  "name": "@grillme/scripts",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "@effect/platform-node": "catalog:",
-    "@t3tools/contracts": "workspace:*",
-    "@t3tools/shared": "workspace:*",
-    "@t3tools/tailscale": "workspace:*",
+    "@grillme/contracts": "workspace:*",
+    "@grillme/shared": "workspace:*",
+    "@grillme/tailscale": "workspace:*",
     "effect": "catalog:",
     "pngjs": "7.0.0",
     "yaml": "catalog:"

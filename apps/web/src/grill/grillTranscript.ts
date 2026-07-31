@@ -1,4 +1,4 @@
-import type { OrchestrationThreadActivity, UserInputQuestion } from "@t3tools/contracts";
+import type { OrchestrationThreadActivity, UserInputQuestion } from "@grillme/contracts";
 
 import {
   compareActivitiesByOrder,

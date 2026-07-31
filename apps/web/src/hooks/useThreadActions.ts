@@ -2,10 +2,10 @@ import {
   parseScopedThreadKey,
   scopeProjectRef,
   scopeThreadRef,
-} from "@t3tools/client-runtime/environment";
-import { settlePromise, squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
-import { canSettle, canSnooze } from "@t3tools/client-runtime/state/thread-settled";
-import { EnvironmentId, type ScopedThreadRef, ThreadId } from "@t3tools/contracts";
+} from "@grillme/client-runtime/environment";
+import { settlePromise, squashAtomCommandFailure } from "@grillme/client-runtime/state/runtime";
+import { canSettle, canSnooze } from "@grillme/client-runtime/state/thread-settled";
+import { EnvironmentId, type ScopedThreadRef, ThreadId } from "@grillme/contracts";
 import * as Cause from "effect/Cause";
 import * as Schema from "effect/Schema";
 import { AsyncResult } from "effect/unstable/reactivity";

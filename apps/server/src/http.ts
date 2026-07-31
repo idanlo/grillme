@@ -3,9 +3,9 @@ import {
   AuthOrchestrationOperateScope,
   AuthOrchestrationReadScope,
   EnvironmentHttpApi,
-} from "@t3tools/contracts";
-import { isDevProxiedPath } from "@t3tools/shared/devProxy";
-import { decodeOtlpTraceRecords } from "@t3tools/shared/observability";
+} from "@grillme/contracts";
+import { isDevProxiedPath } from "@grillme/shared/devProxy";
+import { decodeOtlpTraceRecords } from "@grillme/shared/observability";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";

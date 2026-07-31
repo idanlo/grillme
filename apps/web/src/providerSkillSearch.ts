@@ -1,9 +1,9 @@
-import type { ServerProviderSkill } from "@t3tools/contracts";
+import type { ServerProviderSkill } from "@grillme/contracts";
 import {
   insertRankedSearchResult,
   normalizeSearchQuery,
   scoreQueryMatch,
-} from "@t3tools/shared/searchRanking";
+} from "@grillme/shared/searchRanking";
 
 import { formatProviderSkillDisplayName } from "./providerSkillPresentation";
 

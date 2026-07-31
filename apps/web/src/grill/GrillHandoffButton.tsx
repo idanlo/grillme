@@ -1,8 +1,8 @@
-import type { EnvironmentId, OrchestrationThreadActivity } from "@t3tools/contracts";
+import type { EnvironmentId, OrchestrationThreadActivity } from "@grillme/contracts";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@grillme/client-runtime/state/runtime";
 import { FileDownIcon, LoaderIcon } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 

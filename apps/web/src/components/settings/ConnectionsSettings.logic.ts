@@ -1,4 +1,4 @@
-import type { DesktopBridge, DesktopWslState } from "@t3tools/contracts";
+import type { DesktopBridge, DesktopWslState } from "@grillme/contracts";
 
 type WslEnableBridge = Pick<DesktopBridge, "setWslBackendEnabled" | "setWslDistro" | "setWslOnly">;
 

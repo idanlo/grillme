@@ -11,11 +11,11 @@
   "dependencies": {
     "@clerk/backend": "catalog:",
     "@effect/sql-pg": "catalog:",
+    "@grillme/client-runtime": "workspace:*",
+    "@grillme/contracts": "workspace:*",
+    "@grillme/shared": "workspace:*",
     "@noble/curves": "catalog:",
     "@noble/hashes": "catalog:",
-    "@t3tools/client-runtime": "workspace:*",
-    "@t3tools/contracts": "workspace:*",
-    "@t3tools/shared": "workspace:*",
     "alchemy": "2.0.0-beta.65",
     "drizzle-orm": "1.0.0-rc.4",
     "effect": "catalog:"

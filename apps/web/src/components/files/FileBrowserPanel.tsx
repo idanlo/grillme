@@ -2,9 +2,9 @@ import type {
   ContextMenuItem as TreeContextMenuItem,
   ContextMenuOpenContext as TreeContextMenuOpenContext,
 } from "@pierre/trees";
-import type { EnvironmentId, ProjectEntry } from "@t3tools/contracts";
+import type { EnvironmentId, ProjectEntry } from "@grillme/contracts";
 import { FileTree, useFileTree, useFileTreeSearch } from "@pierre/trees/react";
-import { serializeComposerFileLink } from "@t3tools/shared/composerTrigger";
+import { serializeComposerFileLink } from "@grillme/shared/composerTrigger";
 import { RotateCw } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 

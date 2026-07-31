@@ -15,9 +15,9 @@ import {
   RuntimeMode,
   ThreadId,
   TurnId,
-} from "@t3tools/contracts";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
-import { normalizeModelSlug } from "@t3tools/shared/model";
+} from "@grillme/contracts";
+import { resolveSpawnCommand } from "@grillme/shared/shell";
+import { normalizeModelSlug } from "@grillme/shared/model";
 import * as Crypto from "effect/Crypto";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
