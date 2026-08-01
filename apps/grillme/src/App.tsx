@@ -10,6 +10,7 @@ import {
   type OrchestrationProjectShell,
   type OrchestrationThread,
   type ServerConfig,
+  type ServerConfigStreamEvent,
   type UserInputQuestion,
 } from "@grillme/contracts";
 import {
@@ -73,6 +74,27 @@ function modelChoices(config: ServerConfig | null): ReadonlyArray<ModelChoice> {
       selection: { instanceId: provider.instanceId, model: model.slug },
     }));
   });
+}
+
+function applyServerConfigEvent(
+  current: ServerConfig | null,
+  event: ServerConfigStreamEvent,
+): ServerConfig | null {
+  if (event.type === "snapshot") return event.config;
+  if (!current) return current;
+
+  switch (event.type) {
+    case "keybindingsUpdated":
+      return {
+        ...current,
+        keybindings: event.payload.keybindings,
+        issues: event.payload.issues,
+      };
+    case "providerStatuses":
+      return { ...current, providers: event.payload.providers };
+    case "settingsUpdated":
+      return { ...current, settings: event.payload.settings };
+  }
 }
 
 const Brand = memo(function Brand() {
@@ -349,6 +371,7 @@ export function App() {
 
   useEffect(() => {
     let active = true;
+    let unsubscribeConfig: (() => void) | undefined;
     let unsubscribeShell: (() => void) | undefined;
     let liveRpc: GrillmeRpc | undefined;
 
@@ -361,6 +384,10 @@ export function App() {
         liveRpc = nextRpc;
         setRpc(nextRpc);
         setConfig(nextRpc.config);
+        unsubscribeConfig = nextRpc.subscribeConfig(
+          (event) => setConfig((current) => applyServerConfigEvent(current, event)),
+          (cause) => setError(formatError(cause)),
+        );
         unsubscribeShell = nextRpc.subscribeShell(
           (item) => {
             if (item.kind === "snapshot") {
@@ -389,6 +416,7 @@ export function App() {
 
     return () => {
       active = false;
+      unsubscribeConfig?.();
       unsubscribeShell?.();
       if (liveRpc) void liveRpc.close();
     };

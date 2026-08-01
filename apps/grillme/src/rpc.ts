@@ -12,6 +12,7 @@ import {
   type OrchestrationThreadStreamItem,
   type ProjectWriteFileInput,
   type ServerConfig,
+  type ServerConfigStreamEvent,
   type ThreadId,
 } from "@grillme/contracts";
 import { getPairingTokenFromUrl, stripPairingTokenFromUrl } from "@grillme/shared/remote";
@@ -90,6 +91,10 @@ export interface GrillmeRpc {
   readonly config: ServerConfig;
   readonly dispatch: (command: ClientOrchestrationCommand) => Promise<unknown>;
   readonly writeFile: (input: ProjectWriteFileInput) => Promise<{ readonly relativePath: string }>;
+  readonly subscribeConfig: (
+    onItem: (item: ServerConfigStreamEvent) => void,
+    onError: (error: unknown) => void,
+  ) => () => void;
   readonly subscribeShell: (
     onItem: (item: OrchestrationShellStreamItem) => void,
     onError: (error: unknown) => void,
@@ -140,6 +145,8 @@ export async function connectRpc(): Promise<GrillmeRpc> {
     dispatch: (command) =>
       Effect.runPromise(client[ORCHESTRATION_WS_METHODS.dispatchCommand](command)),
     writeFile: (input) => Effect.runPromise(client[WS_METHODS.projectsWriteFile](input)),
+    subscribeConfig: (onItem, onError) =>
+      subscribe(client[WS_METHODS.subscribeServerConfig]({}), onItem, onError),
     subscribeShell: (onItem, onError) =>
       subscribe(
         client[ORCHESTRATION_WS_METHODS.subscribeShell]({ requestCompletionMarker: true }),
