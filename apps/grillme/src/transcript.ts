@@ -4,6 +4,7 @@ export interface GrillAnswer {
   requestId: string;
   question: UserInputQuestion;
   answer: string | ReadonlyArray<string> | null;
+  askedAt: string;
 }
 
 export interface PendingQuestionRequest {
@@ -83,7 +84,12 @@ export function deriveTranscript(
     if (activity.kind === "user-input.requested") {
       const questions = parseQuestions(payload);
       const indexes = questions.map((question) => {
-        entries.push({ requestId, question, answer: null });
+        entries.push({
+          requestId,
+          question,
+          answer: null,
+          askedAt: activity.createdAt,
+        });
         return entries.length - 1;
       });
       indexesByRequest.set(requestId, indexes);
@@ -97,7 +103,10 @@ export function deriveTranscript(
       for (const index of indexesByRequest.get(requestId) ?? []) {
         const entry = entries[index];
         if (entry)
-          entries[index] = { ...entry, answer: normalizeAnswer(answers[entry.question.id]) };
+          entries[index] = {
+            ...entry,
+            answer: normalizeAnswer(answers[entry.question.id]),
+          };
       }
       indexesByRequest.delete(requestId);
     }
@@ -128,35 +137,60 @@ function answerMarkdown(answer: GrillAnswer["answer"]): string {
   return typeof answer === "string" ? answer : answer.map((entry) => `- ${entry}`).join("\n");
 }
 
+function planTitle(prompt: string): string {
+  const first = prompt.trim().split("\n")[0]?.trim() ?? "";
+  if (!first) return "Untitled plan";
+  return first.length > 72 ? `${first.slice(0, 71).trimEnd()}…` : first;
+}
+
 export function buildHandoffMarkdown(input: {
   prompt: string;
   transcript: ReadonlyArray<GrillAnswer>;
 }): string {
+  const answered = input.transcript.filter((entry) => entry.answer !== null);
+  const open = input.transcript.filter((entry) => entry.answer === null);
+
   const lines = [
-    "# Grillme Handoff",
+    `# Plan: ${planTitle(input.prompt)}`,
     "",
-    "## Original prompt",
+    "## Objective",
     "",
-    input.prompt.trim(),
+    input.prompt.trim() || "_No objective captured yet._",
     "",
     "## Decisions",
   ];
-  if (input.transcript.length === 0) {
-    lines.push("", "_No questions have been answered yet._");
+
+  if (answered.length === 0) {
+    lines.push("", "_Nothing locked in yet._");
   }
-  input.transcript.forEach((entry, index) => {
+  answered.forEach((entry, index) => {
     lines.push(
       "",
       `### ${index + 1}. ${entry.question.question.replaceAll(/\s+/g, " ").trim()}`,
       "",
-      "**Answer**",
-      "",
       answerMarkdown(entry.answer),
     );
   });
+
+  if (open.length > 0) {
+    lines.push("", "## Still open", "");
+    for (const entry of open) {
+      lines.push(`- ${entry.question.question.replaceAll(/\s+/g, " ").trim()}`);
+    }
+  }
+
+  lines.push(
+    "",
+    "## Handoff",
+    "",
+    "Implement the objective above. Every decision here was made by a human — treat them as",
+    "constraints, not suggestions. Ask again before changing one.",
+  );
+
   return `${lines.join("\n")}\n`;
 }
 
 export function handoffFilename(date = new Date()): string {
-  return `grillme-handoff-${date.toISOString().replaceAll(":", "-").replace(".000", "")}.md`;
+  const stamp = date.toISOString().slice(0, 16).replaceAll(":", "-");
+  return `grillme-plan-${stamp}.md`;
 }
