@@ -1,4 +1,4 @@
-import { applyThreadDetailEvent } from "@grillme/client-runtime/state/threads";
+import { applyThreadDetailEvent } from "@grillme/client-runtime/state/threadReducer";
 import {
   CommandId,
   ApprovalRequestId,

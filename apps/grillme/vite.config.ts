@@ -6,7 +6,7 @@ import { DEV_PROXIED_PATH_PREFIXES } from "@grillme/shared/devProxy";
 const port = Number(process.env.PORT ?? 5733);
 const explicitHost = process.env.HOST?.trim();
 const host = explicitHost || "localhost";
-const backendPort = Number(process.env.GRILLME_PORT?.trim() ?? process.env.T3CODE_PORT?.trim());
+const backendPort = Number(process.env.GRILLME_PORT?.trim());
 const proxyTarget =
   Number.isInteger(backendPort) && backendPort > 0 ? `http://localhost:${backendPort}/` : undefined;
 

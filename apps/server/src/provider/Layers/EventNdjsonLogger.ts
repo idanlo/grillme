@@ -2,7 +2,7 @@
 /**
  * Best-effort provider event logging with one shared writer per thread.
  *
- * Native and canonical views share batching, rotation, and retention state so
+ * Protocol and canonical views share batching, rotation, and retention state so
  * they cannot race while appending to the same thread-scoped file.
  */
 import * as NodeFS from "node:fs";
@@ -20,7 +20,7 @@ import * as Scope from "effect/Scope";
 import * as SynchronizedRef from "effect/SynchronizedRef";
 
 import { toSafeThreadAttachmentSegment } from "../../attachmentStore.ts";
-import type { ResourceAttribution } from "../../resourceTelemetry/ResourceAttribution.ts";
+import type { ResourceAttribution } from "../../observability/ResourceAttribution.ts";
 
 const MEBIBYTE = 1024 * 1024;
 const DAY_MS = 24 * 60 * 60 * 1_000;

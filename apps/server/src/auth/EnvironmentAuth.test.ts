@@ -28,7 +28,9 @@ const makeServerConfigLayer = (overrides?: Partial<ServerConfig.ServerConfig["Se
         port: TEST_SERVER_PORT,
       } satisfies ServerConfig.ServerConfig["Service"];
     }),
-  ).pipe(Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "t3-auth-server-test-" })));
+  ).pipe(
+    Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "grillme-auth-server-test-" })),
+  );
 
 const makeEnvironmentAuthLayer = (overrides?: Partial<ServerConfig.ServerConfig["Service"]>) =>
   EnvironmentAuth.layer.pipe(
@@ -51,7 +53,7 @@ const makeCookieRequest = (
   >[0];
 
 const requestMetadata = {
-  deviceType: "desktop" as const,
+  deviceType: "browser" as const,
   os: "macOS",
   browser: "Chrome",
   ipAddress: "192.168.1.23",
@@ -76,7 +78,7 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
       const error = EnvironmentAuth.toBootstrapExchangeError(cause);
 
       expect(error._tag).toBe("ServerAuthBootstrapCredentialValidationError");
-      expect(error.message).toBe("Failed to validate bootstrap credential.");
+      expect(error.message).toBe("Failed to validate local pairing credential.");
       if (error._tag === "ServerAuthBootstrapCredentialValidationError") {
         expect(error.cause).toBe(cause);
       }
@@ -103,43 +105,8 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
         "orchestration:operate",
         "terminal:operate",
         "review:write",
-        "relay:read",
       ]);
       expect(verified.subject).toBe("one-time-token");
-    }).pipe(Effect.provide(makeEnvironmentAuthLayer())),
-  );
-
-  it.effect("does not exchange ordinary pairing grants for administrative access tokens", () =>
-    Effect.gen(function* () {
-      const serverAuth = yield* EnvironmentAuth.EnvironmentAuth;
-      const pairingCredential = yield* serverAuth.issuePairingCredential();
-
-      const error = yield* serverAuth
-        .exchangeBootstrapCredentialForAccessToken(
-          pairingCredential.credential,
-          ["orchestration:read", "access:write"],
-          requestMetadata,
-        )
-        .pipe(Effect.flip);
-
-      expect(error._tag).toBe("ServerAuthScopeNotGrantedError");
-    }).pipe(Effect.provide(makeEnvironmentAuthLayer())),
-  );
-
-  it.effect("inherits a constrained pairing grant when token exchange omits scope", () =>
-    Effect.gen(function* () {
-      const serverAuth = yield* EnvironmentAuth.EnvironmentAuth;
-      const pairingCredential = yield* serverAuth.issuePairingCredential({
-        scopes: ["orchestration:read"],
-      });
-
-      const token = yield* serverAuth.exchangeBootstrapCredentialForAccessToken(
-        pairingCredential.credential,
-        undefined,
-        requestMetadata,
-      );
-
-      expect(token.scope).toBe("orchestration:read");
     }).pipe(Effect.provide(makeEnvironmentAuthLayer())),
   );
 
@@ -163,7 +130,7 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
       const sessions = yield* SessionStore.SessionStore;
 
       const pairingUrl = yield* serverAuth.issueStartupPairingUrl("http://127.0.0.1:3773");
-      const token = new URLSearchParams(new URL(pairingUrl).hash.slice(1)).get("token");
+      const token = new URL(pairingUrl).searchParams.get("pairingToken");
       const listedPairingLinks = yield* serverAuth.listPairingLinks();
       expect(token).toBeTruthy();
       expect(
@@ -182,10 +149,8 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
         "orchestration:operate",
         "terminal:operate",
         "review:write",
-        "relay:read",
         "access:read",
         "access:write",
-        "relay:write",
       ]);
       expect(verified.subject).toBe("administrative-bootstrap");
     }).pipe(Effect.provide(makeEnvironmentAuthLayer())),
@@ -198,24 +163,25 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
         const serverAuth = yield* EnvironmentAuth.EnvironmentAuth;
         const sessions = yield* SessionStore.SessionStore;
 
+        const administrativeCredential = yield* serverAuth.issueStartupPairingCredential();
         const administrativeExchange = yield* serverAuth.createBrowserSession(
-          "desktop-bootstrap-token",
+          administrativeCredential.credential,
           requestMetadata,
         );
         const administrativeSession = yield* serverAuth.authenticateHttpRequest(
           makeCookieRequest(sessions.cookieName, administrativeExchange.sessionToken),
         );
         const pairingCredential = yield* serverAuth.issuePairingCredential({
-          label: "Julius iPhone",
+          label: "Local browser",
         });
         const listedPairingLinks = yield* serverAuth.listPairingLinks();
         const clientExchange = yield* serverAuth.createBrowserSession(
           pairingCredential.credential,
           {
             ...requestMetadata,
-            deviceType: "mobile",
-            os: "iOS",
-            browser: "Safari",
+            deviceType: "browser",
+            os: "macOS",
+            browser: "Chrome",
             ipAddress: "192.168.1.88",
           },
         );
@@ -234,7 +200,7 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
 
         expect(listedPairingLinks.map((entry) => entry.id)).toContain(pairingCredential.id);
         expect(listedPairingLinks.find((entry) => entry.id === pairingCredential.id)?.label).toBe(
-          "Julius iPhone",
+          "Local browser",
         );
         expect(clientsBeforeRevoke).toHaveLength(2);
         expect(
@@ -247,20 +213,14 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
         expect(
           clientsBeforeRevoke.find((entry) => entry.sessionId === clientSession.sessionId)?.client
             .label,
-        ).toBe("Julius iPhone");
+        ).toBe("Local browser");
         expect(
           clientsBeforeRevoke.find((entry) => entry.sessionId === clientSession.sessionId)?.client
             .deviceType,
-        ).toBe("mobile");
+        ).toBe("browser");
         expect(revokedCount).toBe(1);
         expect(clientsAfterRevoke).toHaveLength(1);
         expect(clientsAfterRevoke[0]?.sessionId).toBe(administrativeSession.sessionId);
-      }).pipe(
-        Effect.provide(
-          makeEnvironmentAuthLayer({
-            desktopBootstrapToken: "desktop-bootstrap-token",
-          }),
-        ),
-      ),
+      }).pipe(Effect.provide(makeEnvironmentAuthLayer())),
   );
 });

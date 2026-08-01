@@ -29,11 +29,11 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 
 import { ServerConfig } from "../../config.ts";
-import * as ResourceAttribution from "../../resourceTelemetry/ResourceAttribution.ts";
+import * as ResourceAttribution from "../../observability/ResourceAttribution.ts";
 import * as EventNdjsonLogger from "./EventNdjsonLogger.ts";
 
 /**
- * Shared logger pair for native + canonical provider event streams.
+ * Shared logger pair for provider protocol + canonical event streams.
  *
  * Service value is intentionally a struct of two optional loggers rather
  * than two parallel tags. Construction site is one place
@@ -46,7 +46,7 @@ export class ProviderEventLoggers extends Context.Service<
     readonly native: EventNdjsonLogger.EventNdjsonLogger | undefined;
     readonly canonical: EventNdjsonLogger.EventNdjsonLogger | undefined;
   }
->()("t3/provider/Layers/ProviderEventLoggers") {}
+>()("@grillme/server/provider/Layers/ProviderEventLoggers") {}
 
 /**
  * Constant value used by tests / boot layers that want to opt out of native

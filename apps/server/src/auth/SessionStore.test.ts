@@ -12,27 +12,24 @@ import * as AuthSessions from "../persistence/AuthSessions.ts";
 import * as SessionStore from "./SessionStore.ts";
 import * as ServerSecretStore from "./ServerSecretStore.ts";
 
-const makeServerConfigLayer = (
-  overrides?: Partial<Pick<ServerConfig.ServerConfig["Service"], "desktopBootstrapToken">>,
-) =>
+const makeServerConfigLayer = () =>
   Layer.effect(
     ServerConfig.ServerConfig,
     Effect.gen(function* () {
       const config = yield* ServerConfig.ServerConfig;
       return {
         ...config,
-        ...overrides,
       } satisfies ServerConfig.ServerConfig["Service"];
     }),
-  ).pipe(Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "t3-auth-session-test-" })));
+  ).pipe(
+    Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "grillme-auth-session-test-" })),
+  );
 
-const makeSessionStoreLayer = (
-  overrides?: Partial<Pick<ServerConfig.ServerConfig["Service"], "desktopBootstrapToken">>,
-) =>
+const makeSessionStoreLayer = () =>
   SessionStore.layer.pipe(
     Layer.provide(SqlitePersistenceMemory),
     Layer.provide(ServerSecretStore.layer),
-    Layer.provide(makeServerConfigLayer(overrides)),
+    Layer.provide(makeServerConfigLayer()),
   );
 
 const repositoryFailure = new PersistenceSqlError({
@@ -64,23 +61,23 @@ it.layer(NodeServices.layer)("SessionStore.layer", (it) => {
     Effect.gen(function* () {
       const sessions = yield* SessionStore.SessionStore;
       const issued = yield* sessions.issue({
-        subject: "desktop-bootstrap",
+        subject: "local-browser",
         scopes: ["orchestration:read", "access:write"],
         client: {
-          label: "Desktop app",
-          deviceType: "desktop",
+          label: "Local browser",
+          deviceType: "browser",
           os: "macOS",
-          browser: "Electron",
+          browser: "Chrome",
           ipAddress: "127.0.0.1",
         },
       });
       const verified = yield* sessions.verify(issued.token);
 
       expect(verified.method).toBe("browser-session-cookie");
-      expect(verified.subject).toBe("desktop-bootstrap");
+      expect(verified.subject).toBe("local-browser");
       expect(verified.scopes).toEqual(["orchestration:read", "access:write"]);
-      expect(verified.client.label).toBe("Desktop app");
-      expect(verified.client.browser).toBe("Electron");
+      expect(verified.client.label).toBe("Local browser");
+      expect(verified.client.browser).toBe("Chrome");
       expect(verified.expiresAt?.toString()).toBe(issued.expiresAt.toString());
     }).pipe(Effect.provide(makeSessionStoreLayer())),
   );
@@ -145,7 +142,6 @@ it.layer(NodeServices.layer)("SessionStore.layer", (it) => {
         "orchestration:operate",
         "terminal:operate",
         "review:write",
-        "relay:read",
       ]);
     }).pipe(Effect.provide(Layer.merge(makeSessionStoreLayer(), TestClock.layer()))),
   );
@@ -216,13 +212,13 @@ it.layer(NodeServices.layer)("SessionStore.layer", (it) => {
     Effect.gen(function* () {
       const sessions = yield* SessionStore.SessionStore;
       const administrative = yield* sessions.issue({
-        subject: "desktop-bootstrap",
+        subject: "local-browser",
         scopes: ["orchestration:read", "access:write"],
         client: {
-          label: "Desktop app",
-          deviceType: "desktop",
+          label: "Local browser",
+          deviceType: "browser",
           os: "macOS",
-          browser: "Electron",
+          browser: "Chrome",
         },
       });
       const client = yield* sessions.issue({
@@ -230,9 +226,9 @@ it.layer(NodeServices.layer)("SessionStore.layer", (it) => {
         scopes: ["orchestration:read"],
         client: {
           label: "Julius iPhone",
-          deviceType: "mobile",
-          os: "iOS",
-          browser: "Safari",
+          deviceType: "tablet",
+          os: "macOS",
+          browser: "Chrome",
           ipAddress: "192.168.1.88",
         },
       });
@@ -257,7 +253,7 @@ it.layer(NodeServices.layer)("SessionStore.layer", (it) => {
       expect(
         beforeRevoke.find((entry) => entry.sessionId === administrative.sessionId)?.client
           .deviceType,
-      ).toBe("desktop");
+      ).toBe("browser");
       expect(revokedCount).toBe(1);
       expect(afterRevoke).toHaveLength(1);
       expect(afterRevoke[0]?.sessionId).toBe(administrative.sessionId);

@@ -9,33 +9,28 @@ import * as EnvironmentAuth from "./EnvironmentAuth.ts";
 import * as ServerSecretStore from "./ServerSecretStore.ts";
 import * as SessionStore from "./SessionStore.ts";
 
-const makeServerConfigLayer = (
-  overrides?: Partial<Pick<ServerConfig.ServerConfig["Service"], "desktopBootstrapToken">>,
-) =>
+const makeServerConfigLayer = () =>
   Layer.effect(
     ServerConfig.ServerConfig,
     Effect.gen(function* () {
       const config = yield* ServerConfig.ServerConfig;
       return {
         ...config,
-        ...overrides,
       } satisfies ServerConfig.ServerConfig["Service"];
     }),
   ).pipe(
     Layer.provide(
       ServerConfig.layerTest(process.cwd(), {
-        prefix: "t3-auth-control-plane-test-",
+        prefix: "grillme-auth-control-plane-test-",
       }),
     ),
   );
 
-const makeEnvironmentAuthLayer = (
-  overrides?: Partial<Pick<ServerConfig.ServerConfig["Service"], "desktopBootstrapToken">>,
-) =>
+const makeEnvironmentAuthLayer = () =>
   EnvironmentAuth.layer.pipe(
     Layer.provideMerge(ServerSecretStore.layer),
     Layer.provideMerge(SqlitePersistenceMemory),
-    Layer.provide(makeServerConfigLayer(overrides)),
+    Layer.provide(makeServerConfigLayer()),
   );
 
 it.layer(NodeServices.layer)("EnvironmentAuth administrative operations", (it) => {
@@ -82,10 +77,8 @@ it.layer(NodeServices.layer)("EnvironmentAuth administrative operations", (it) =
         "orchestration:operate",
         "terminal:operate",
         "review:write",
-        "relay:read",
         "access:read",
         "access:write",
-        "relay:write",
       ]);
       expect(issued.client.deviceType).toBe("bot");
       expect(issued.client.label).toBe("deploy-bot");
@@ -95,10 +88,8 @@ it.layer(NodeServices.layer)("EnvironmentAuth administrative operations", (it) =
         "orchestration:operate",
         "terminal:operate",
         "review:write",
-        "relay:read",
         "access:read",
         "access:write",
-        "relay:write",
       ]);
       expect(verified.method).toBe("bearer-access-token");
       expect(listedBeforeRevoke).toHaveLength(1);
@@ -115,7 +106,7 @@ it.layer(NodeServices.layer)("EnvironmentAuth administrative operations", (it) =
       const sessionCredentials = yield* SessionStore.SessionStore;
 
       const issued = yield* environmentAuth.issueSession({
-        label: "remote-ipad",
+        label: "local-browser",
       });
       const beforeConnect = yield* environmentAuth.listSessions();
       yield* sessionCredentials.markConnected(issued.sessionId);

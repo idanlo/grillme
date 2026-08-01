@@ -1,5 +1,4 @@
 import * as Schema from "effect/Schema";
-import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
 import { AuthSessionId, TrimmedNonEmptyString } from "./baseSchemas.ts";
 
@@ -10,44 +9,13 @@ import { AuthSessionId, TrimmedNonEmptyString } from "./baseSchemas.ts";
  * expected to be accessed, not a transport detail and not an exhaustive list
  * of every accepted credential.
  *
- * Typical usage:
- * - rendered in auth/pairing UI so the user understands what kind of
- *   environment they are connecting to
- * - used by clients to decide whether silent desktop bootstrap is expected or
- *   whether an explicit pairing flow should be shown
- *
- * Meanings:
- * - `desktop-managed-local`: local desktop-managed environment with narrow
- *   trusted bootstrap, intended to avoid login prompts on the same machine
- * - `loopback-browser`: standalone local server intended for browser pairing on
- *   the same machine
- * - `remote-reachable`: environment intended to be reached from other devices
- *   or networks, where explicit pairing/auth is expected
- * - `unsafe-no-auth`: intentionally unauthenticated mode; this is an explicit
- *   unsafe escape hatch, not a normal deployment mode
+ * Grillme only serves a local browser session and uses one explicit pairing
+ * token to bootstrap that session.
  */
-export const ServerAuthPolicy = Schema.Literals([
-  "desktop-managed-local",
-  "loopback-browser",
-  "remote-reachable",
-  "unsafe-no-auth",
-]);
+export const ServerAuthPolicy = Schema.Literals(["loopback-browser"]);
 export type ServerAuthPolicy = typeof ServerAuthPolicy.Type;
 
-/**
- * A credential type that can be exchanged for a real authenticated session.
- *
- * Bootstrap methods are for establishing trust at the start of a connection or
- * pairing flow. They are not the long-lived credential used for ordinary
- * authenticated HTTP / WebSocket traffic after pairing succeeds.
- *
- * Current methods:
- * - `desktop-bootstrap`: a trusted local desktop handoff, used so the desktop
- *   shell can pair the renderer without a login screen
- * - `one-time-token`: a short-lived pairing token, suitable for manual pairing
- *   flows such as `/pair?token=...`
- */
-export const ServerAuthBootstrapMethod = Schema.Literals(["desktop-bootstrap", "one-time-token"]);
+export const ServerAuthBootstrapMethod = Schema.Literals(["one-time-token"]);
 export type ServerAuthBootstrapMethod = typeof ServerAuthBootstrapMethod.Type;
 
 /**
@@ -58,18 +26,11 @@ export type ServerAuthBootstrapMethod = typeof ServerAuthBootstrapMethod.Type;
  * WebSocket access. They are distinct from bootstrap methods so clients can
  * reason clearly about "pair first, then use session auth".
  *
- * Current methods:
- * - `browser-session-cookie`: cookie-backed browser session, used by the web
- *   app after bootstrap/pairing
- * - `bearer-access-token`: scoped token suitable for non-cookie or
- *   non-browser clients
- * - `dpop-access-token`: scoped proof-of-possession token used by managed
- *   relay connections
+ * The browser uses a cookie; local CLI commands may use a bearer token.
  */
 export const ServerAuthSessionMethod = Schema.Literals([
   "browser-session-cookie",
   "bearer-access-token",
-  "dpop-access-token",
 ]);
 export type ServerAuthSessionMethod = typeof ServerAuthSessionMethod.Type;
 
@@ -79,8 +40,6 @@ export const AuthTerminalOperateScope = "terminal:operate" as const;
 export const AuthReviewWriteScope = "review:write" as const;
 export const AuthAccessReadScope = "access:read" as const;
 export const AuthAccessWriteScope = "access:write" as const;
-export const AuthRelayReadScope = "relay:read" as const;
-export const AuthRelayWriteScope = "relay:write" as const;
 export const AuthEnvironmentScope = Schema.Literals([
   AuthOrchestrationReadScope,
   AuthOrchestrationOperateScope,
@@ -88,8 +47,6 @@ export const AuthEnvironmentScope = Schema.Literals([
   AuthReviewWriteScope,
   AuthAccessReadScope,
   AuthAccessWriteScope,
-  AuthRelayReadScope,
-  AuthRelayWriteScope,
 ]);
 export type AuthEnvironmentScope = typeof AuthEnvironmentScope.Type;
 export const AuthEnvironmentScopes = Schema.Array(AuthEnvironmentScope);
@@ -100,20 +57,12 @@ export const AuthStandardClientScopes = [
   AuthOrchestrationOperateScope,
   AuthTerminalOperateScope,
   AuthReviewWriteScope,
-  AuthRelayReadScope,
 ] as const;
 export const AuthAdministrativeScopes = [
   ...AuthStandardClientScopes,
   AuthAccessReadScope,
   AuthAccessWriteScope,
-  AuthRelayWriteScope,
 ] as const;
-
-export const AuthTokenExchangeGrantType =
-  "urn:ietf:params:oauth:grant-type:token-exchange" as const;
-export const AuthAccessTokenType = "urn:ietf:params:oauth:token-type:access_token" as const;
-export const AuthEnvironmentBootstrapTokenType =
-  "urn:t3:params:oauth:token-type:environment-bootstrap" as const;
 
 /**
  * Server-advertised auth capabilities for a specific execution environment.
@@ -157,8 +106,7 @@ export const AuthBrowserSessionResult = Schema.Struct({
 export type AuthBrowserSessionResult = typeof AuthBrowserSessionResult.Type;
 
 export const AuthClientMetadataDeviceType = Schema.Literals([
-  "desktop",
-  "mobile",
+  "browser",
   "tablet",
   "bot",
   "unknown",
@@ -171,33 +119,6 @@ export const AuthClientPresentationMetadata = Schema.Struct({
   os: Schema.optionalKey(TrimmedNonEmptyString),
 });
 export type AuthClientPresentationMetadata = typeof AuthClientPresentationMetadata.Type;
-
-export const AuthTokenExchangeRequest = Schema.Struct({
-  grant_type: Schema.Literal(AuthTokenExchangeGrantType),
-  subject_token: TrimmedNonEmptyString,
-  subject_token_type: Schema.Literal(AuthEnvironmentBootstrapTokenType),
-  requested_token_type: Schema.Literal(AuthAccessTokenType),
-  scope: Schema.optionalKey(TrimmedNonEmptyString),
-  client_label: Schema.optionalKey(TrimmedNonEmptyString),
-  client_device_type: Schema.optionalKey(AuthClientMetadataDeviceType),
-  client_os: Schema.optionalKey(TrimmedNonEmptyString),
-}).pipe(HttpApiSchema.asFormUrlEncoded());
-export type AuthTokenExchangeRequest = typeof AuthTokenExchangeRequest.Type;
-
-export const AuthAccessTokenResult = Schema.Struct({
-  access_token: TrimmedNonEmptyString,
-  issued_token_type: Schema.Literal(AuthAccessTokenType),
-  token_type: Schema.Literals(["Bearer", "DPoP"]),
-  expires_in: Schema.Number,
-  scope: TrimmedNonEmptyString,
-});
-export type AuthAccessTokenResult = typeof AuthAccessTokenResult.Type;
-
-export const AuthWebSocketTicketResult = Schema.Struct({
-  ticket: TrimmedNonEmptyString,
-  expiresAt: Schema.DateTimeUtc,
-});
-export type AuthWebSocketTicketResult = typeof AuthWebSocketTicketResult.Type;
 
 export const AuthPairingCredentialResult = Schema.Struct({
   id: TrimmedNonEmptyString,

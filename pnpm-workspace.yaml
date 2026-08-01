@@ -1,7 +1,5 @@
 packages:
   - apps/*
-  - infra/*
-  - oxlint-plugin-t3code
   - packages/*
   - scripts
 
@@ -15,23 +13,14 @@ allowBuilds:
   esbuild: true
   msgpackr-extract: true
   msw: false
-  node-pty: true
   sharp: true
   utf-8-validate: false
-  workerd: false
 
 catalog:
-  "@clerk/backend": 3.14.0
-  "@clerk/clerk-js": 6.25.12
-  "@clerk/electron": 0.0.24
-  "@clerk/react": 6.12.9
-  "@clerk/shared": 4.25.9
-  "@effect/atom-react": 4.0.0-beta.102
   "@effect/openapi-generator": 4.0.0-beta.102
   "@effect/platform-bun": 4.0.0-beta.102
   "@effect/platform-node": 4.0.0-beta.102
   "@effect/platform-node-shared": 4.0.0-beta.102
-  "@effect/sql-pg": 4.0.0-beta.102
   "@effect/sql-sqlite-bun": 4.0.0-beta.102
   "@effect/tsgo": 0.13.2
   "@effect/vitest": 4.0.0-beta.102
@@ -41,52 +30,24 @@ catalog:
   "@types/node": 24.12.4
   "@typescript/native-preview": 7.0.0-dev.20260604.1
   effect: 4.0.0-beta.102
-  jose: 6.2.2
   typescript: ~6.0.3
   vite: npm:@voidzero-dev/vite-plus-core@0.2.2
   vite-plus: 0.2.2
   yaml: ^2.9.0
 
 minimumReleaseAgeExclude:
-  - "@clerk/backend@3.14.0"
-  - "@clerk/clerk-js@6.25.12"
-  - "@clerk/electron@0.0.24"
-  - "@clerk/react@6.12.9"
-  - "@clerk/shared@4.25.9"
-  - "@distilled.cloud/aws@0.30.2"
-  - "@distilled.cloud/axiom@0.30.2"
-  - "@distilled.cloud/cloudflare@0.30.2"
-  - "@distilled.cloud/core@0.30.2"
-  - "@distilled.cloud/neon@0.30.2"
-  - "@distilled.cloud/planetscale@0.30.2"
-  - "@effect/atom-react@4.0.0-beta.102"
   - "@effect/openapi-generator@4.0.0-beta.102"
   - "@effect/platform-bun@4.0.0-beta.102"
   - "@effect/platform-node-shared@4.0.0-beta.102"
   - "@effect/platform-node@4.0.0-beta.102"
-  - "@effect/sql-pg@4.0.0-beta.102"
   - "@effect/sql-sqlite-bun@4.0.0-beta.102"
   - "@effect/vitest@4.0.0-beta.102"
-  - alchemy@2.0.0-beta.65
   - effect@4.0.0-beta.102
 
 overrides:
-  "@clerk/backend": "catalog:"
-  "@clerk/clerk-js": "catalog:"
-  "@clerk/clerk-js>@base-org/account": "-"
-  "@clerk/clerk-js>@coinbase/wallet-sdk": "-"
-  "@clerk/clerk-js>@solana/wallet-adapter-base": "-"
-  "@clerk/clerk-js>@solana/wallet-adapter-react": "-"
-  "@clerk/clerk-js>@solana/wallet-standard": "-"
-  "@clerk/clerk-js>@wallet-standard/core": "-"
-  "@clerk/electron": "catalog:"
-  "@clerk/react": "catalog:"
-  "@clerk/shared": "catalog:"
-  "@effect/atom-react": "catalog:"
   "@effect/platform-bun": "catalog:"
   "@effect/platform-node": "catalog:"
   "@effect/platform-node-shared": "catalog:"
-  "@effect/sql-pg": "catalog:"
   "@effect/sql-sqlite-bun": "catalog:"
   "@effect/vitest": "catalog:"
   "@effect/vitest>vitest": "-"

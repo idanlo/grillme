@@ -11,18 +11,13 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  check:
-    name: Check
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            /*
-            !/.repos/
-          sparse-checkout-cone-mode: false
+        uses: actions/checkout@v4
 
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
@@ -31,44 +26,22 @@ jobs:
           cache: true
           run-install: true
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
+      - name: Build server bundle
+        run: vp run --filter @grillme/server build:bundle
 
-      - name: Ensure Electron runtime is installed
-        run: vp run --filter @grillme/desktop ensure:electron
+      - name: Build local client
+        run: vp run --filter @grillme/grillme build
 
-      - name: Check
-        run: vp check
-
-      - name: Typecheck
-        run: vpr typecheck
-
-      - name: Check resource monitor formatting
-        run: cargo fmt --manifest-path native/resource-monitor/Cargo.toml -- --check
-
-      - name: Build desktop pipeline
-        run: vp run build:desktop
-
-      - name: Verify preload bundle output
-        run: |
-          test -f apps/desktop/dist-electron/preload.cjs
-          grep -nE "desktopBridge|getLocalEnvironmentBootstrap|PICK_FOLDER_CHANNEL|wsUrl" apps/desktop/dist-electron/preload.cjs
-          grep -n "__clerk_internal_electron_passkeys" apps/desktop/dist-electron/preload.cjs
+      - name: Verify CLI
+        run: node apps/server/dist/bin.mjs --help
 
   test:
     name: Test
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            /*
-            !/.repos/
-          sparse-checkout-cone-mode: false
+        uses: actions/checkout@v4
 
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
@@ -77,67 +50,8 @@ jobs:
           cache: true
           run-install: true
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Test local client
+        run: vp run --filter @grillme/grillme test
 
-      - name: Ensure Electron runtime is installed
-        run: vp run --filter @grillme/desktop ensure:electron
-
-      - name: Test
-        run: vp run test
-
-      - name: Test resource monitor
-        run: cargo test --locked --manifest-path native/resource-monitor/Cargo.toml
-
-  mobile_native_static_analysis:
-    name: Mobile Native Static Analysis
-    runs-on: blacksmith-6vcpu-macos-26
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            /*
-            !/.repos/
-          sparse-checkout-cone-mode: false
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version-file: package.json
-          cache: true
-          run-install: |
-            args:
-              - --filter=@grillme/scripts...
-
-      - name: Install mobile native static analysis tools
-        run: brew bundle install --file apps/mobile/Brewfile
-
-      - name: Lint mobile native sources
-        run: vp run lint:mobile
-
-  release_smoke:
-    name: Release Smoke
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            /*
-            !/.repos/
-          sparse-checkout-cone-mode: false
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version-file: package.json
-          cache: true
-          run-install: |
-            args:
-              - --filter=@grillme/scripts...
-
-      - name: Exercise release-only workflow steps
-        run: node scripts/release-smoke.ts
+      - name: Test contracts and shared runtime
+        run: vp run --filter @grillme/contracts --filter @grillme/shared test

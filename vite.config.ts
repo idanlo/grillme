@@ -1,13 +1,7 @@
 import "vite-plus/test/config";
 import { defineConfig } from "vite-plus";
-import * as NodeURL from "node:url";
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      "~": NodeURL.fileURLToPath(new URL("./apps/web/src", import.meta.url)),
-    },
-  },
   test: {
     environment: "node",
     exclude: [
@@ -28,14 +22,11 @@ export default defineConfig({
       ".reference",
       ".repos/**",
       ".plans",
-      ".alchemy",
       "dist",
       "node_modules",
       "pnpm-lock.yaml",
       "*.tsbuildinfo",
       "**/routeTree.gen.ts",
-      "apps/web/public/mockServiceWorker.js",
-      "apps/web/src/lib/vendor/qrcodegen.ts",
       "*.icon/**",
     ],
     sortPackageJson: {},
@@ -59,7 +50,6 @@ export default defineConfig({
       "**/routeTree.gen.ts",
     ],
     plugins: ["eslint", "oxc", "react", "unicorn", "typescript"],
-    jsPlugins: ["./oxlint-plugin-t3code/index.ts"],
     categories: {
       correctness: "warn",
       suspicious: "warn",
@@ -103,10 +93,6 @@ export default defineConfig({
           ],
         },
       ],
-      "t3code/no-global-process-runtime": "error",
-      "t3code/no-inline-schema-compile": "warn",
-      "t3code/no-manual-effect-runtime-in-tests": "error",
-      "t3code/namespace-node-imports": "error",
     },
     options: {
       // Revisit once Oxlint's tsgolint path can integrate with @effect/tsgo diagnostics.

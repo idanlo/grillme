@@ -72,7 +72,9 @@ const subjectFlag = Flag.string("subject").pipe(
 );
 
 const baseUrlFlag = Flag.string("base-url").pipe(
-  Flag.withDescription("Optional public base URL used to print a ready `/pair#token=...` link."),
+  Flag.withDescription(
+    "Optional local base URL used to print a ready `/pair?pairingToken=...` link.",
+  ),
   Flag.optional,
 );
 
@@ -167,7 +169,7 @@ const sessionIssueCommand = Command.make("issue", {
   tokenOnly: tokenOnlyFlag,
   json: jsonFlag,
 }).pipe(
-  Command.withDescription("Issue a scoped bearer access token for headless or remote clients."),
+  Command.withDescription("Issue a scoped bearer access token for local CLI use."),
   Command.withHandler((flags) =>
     runWithEnvironmentAuth(
       flags,

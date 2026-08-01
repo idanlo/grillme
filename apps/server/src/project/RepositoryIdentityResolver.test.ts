@@ -207,7 +207,7 @@ it.layer(NodeServices.layer)("RepositoryIdentityResolverLive", (it) => {
       expect(initialIdentity).not.toBeNull();
       expect(initialIdentity?.canonicalKey).toBe("github.com/t3tools/t3code");
 
-      yield* git(cwd, ["remote", "set-url", "origin", "git@github.com:T3Tools/t3code-next.git"]);
+      yield* git(cwd, ["remote", "set-url", "origin", "git@github.com:T3Tools/grillme-next.git"]);
 
       const cachedIdentity = yield* resolver.resolve(cwd);
       expect(cachedIdentity).not.toBeNull();
@@ -217,9 +217,9 @@ it.layer(NodeServices.layer)("RepositoryIdentityResolverLive", (it) => {
 
       const refreshedIdentity = yield* resolver.resolve(cwd);
       expect(refreshedIdentity).not.toBeNull();
-      expect(refreshedIdentity?.canonicalKey).toBe("github.com/t3tools/t3code-next");
-      expect(refreshedIdentity?.displayName).toBe("t3tools/t3code-next");
-      expect(refreshedIdentity?.name).toBe("t3code-next");
+      expect(refreshedIdentity?.canonicalKey).toBe("github.com/t3tools/grillme-next");
+      expect(refreshedIdentity?.displayName).toBe("t3tools/grillme-next");
+      expect(refreshedIdentity?.name).toBe("grillme-next");
     }).pipe(
       Effect.provide(
         Layer.merge(

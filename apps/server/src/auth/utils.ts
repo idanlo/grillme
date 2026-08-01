@@ -8,7 +8,7 @@ import * as NodeCrypto from "node:crypto";
 import * as Encoding from "effect/Encoding";
 import * as Result from "effect/Result";
 
-const SESSION_COOKIE_NAME = "t3_session";
+const SESSION_COOKIE_NAME = "grillme_session";
 
 /**
  * Cookies are scoped by host but *not* by port, so any two servers that can be
@@ -16,54 +16,21 @@ const SESSION_COOKIE_NAME = "t3_session";
  * clobbers the first's session and both sides see "Invalid session token
  * signature" until someone clears cookies by hand.
  *
- * Two populations qualify, for the same reason but from different causes:
- *
- * - **Dev servers** (`devUrl` set), which run several at a time across worktrees.
- * - **Desktop**, which scans upward from 3773 for a free port and binds
- *   127.0.0.1, so a second instance lands on a different port and the same host.
- *
- * Hosted deployments keep the stable production name: their public port can
- * change between releases, and scoping it would log every user out.
+ * Local instances include their port and data-directory hash so parallel
+ * development servers cannot overwrite one another's browser session.
  */
 export function resolveSessionCookieName(input: {
-  readonly mode: "web" | "desktop";
+  readonly mode: "web";
   readonly port: number;
   readonly host: string | undefined;
   readonly instanceKey: string;
   readonly development: boolean;
 }): string {
-  if (input.mode === "desktop") {
-    return `${SESSION_COOKIE_NAME}_${input.port}`;
-  }
-
-  if (!input.development && isRemoteReachableHost(input.host)) {
-    return SESSION_COOKIE_NAME;
-  }
-
-  // Cookies are scoped by host, not port. Loopback development servers need an
-  // instance-specific name or parallel agents overwrite each other's session,
-  // and a server that later reuses the port receives a token signed elsewhere.
   const instanceHash = NodeCrypto.createHash("sha256")
     .update(input.instanceKey)
     .digest("hex")
     .slice(0, 12);
   return `${SESSION_COOKIE_NAME}_${input.port}_${instanceHash}`;
-}
-
-export function isRemoteReachableHost(host: string | undefined): boolean {
-  if (host === "0.0.0.0" || host === "::" || host === "[::]") {
-    return true;
-  }
-  if (!host || host.length === 0) {
-    return false;
-  }
-  return !(
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    host === "::1" ||
-    host === "[::1]" ||
-    host.startsWith("127.")
-  );
 }
 
 export function base64UrlEncode(input: string | Uint8Array): string {
@@ -114,13 +81,8 @@ function inferDeviceType(userAgent: string | undefined): AuthClientMetadataDevic
   if (/bot|crawler|spider|slurp|curl|wget/.test(normalized)) {
     return "bot";
   }
-  if (/ipad|tablet/.test(normalized)) {
-    return "tablet";
-  }
-  if (/iphone|android.+mobile|mobile/.test(normalized)) {
-    return "mobile";
-  }
-  return "desktop";
+  if (/ipad|tablet|mobile/.test(normalized)) return "tablet";
+  return "browser";
 }
 
 function inferBrowser(userAgent: string | undefined): string | undefined {
@@ -131,7 +93,6 @@ function inferBrowser(userAgent: string | undefined): string | undefined {
   if (/edg\//.test(normalized)) return "Edge";
   if (/opr\//.test(normalized)) return "Opera";
   if (/firefox\//.test(normalized)) return "Firefox";
-  if (/electron\//.test(normalized)) return "Electron";
   if (/chrome\//.test(normalized) || /crios\//.test(normalized)) return "Chrome";
   if (/safari\//.test(normalized) && !/chrome\//.test(normalized)) return "Safari";
   return undefined;
@@ -142,8 +103,6 @@ function inferOs(userAgent: string | undefined): string | undefined {
     return undefined;
   }
   const normalized = userAgent.toLowerCase();
-  if (/iphone|ipad|ipod/.test(normalized)) return "iOS";
-  if (/android/.test(normalized)) return "Android";
   if (/mac os x|macintosh/.test(normalized)) return "macOS";
   if (/windows nt/.test(normalized)) return "Windows";
   if (/linux/.test(normalized)) return "Linux";

@@ -1,9 +1,4 @@
-import {
-  makeEnvironmentHttpApiClient,
-  makeWsRpcProtocolClient,
-  remoteHttpClientLayer,
-  type WsRpcProtocolClient,
-} from "@grillme/client-runtime/rpc";
+import { makeWsRpcProtocolClient, type WsRpcProtocolClient } from "@grillme/client-runtime/rpc";
 import {
   ORCHESTRATION_WS_METHODS,
   WS_METHODS,
@@ -15,7 +10,6 @@ import {
   type ServerConfigStreamEvent,
   type ThreadId,
 } from "@grillme/contracts";
-import { getPairingTokenFromUrl, stripPairingTokenFromUrl } from "@grillme/shared/remote";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
 import * as Exit from "effect/Exit";
@@ -24,7 +18,6 @@ import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
-import type * as HttpClient from "effect/unstable/http/HttpClient";
 import * as RpcClient from "effect/unstable/rpc/RpcClient";
 import * as RpcSerialization from "effect/unstable/rpc/RpcSerialization";
 import * as Socket from "effect/unstable/socket/Socket";
@@ -36,41 +29,49 @@ function websocketUrl(): string {
   return url.toString();
 }
 
-async function bootstrapBrowserSession(): Promise<void> {
-  const baseUrl = window.location.origin;
-  const currentUrl = new URL(window.location.href);
-  const credential = getPairingTokenFromUrl(currentUrl);
-  const clientEffect = makeEnvironmentHttpApiClient(baseUrl);
-  const fetchWithCookies: typeof globalThis.fetch = (input, init) =>
-    // Browser cookie bootstrap is intentionally implemented at this platform boundary.
-    // @effect-diagnostics-next-line globalFetch:off
-    globalThis.fetch(input, { ...init, credentials: "include" });
-  const httpLayer = remoteHttpClientLayer(fetchWithCookies);
-  const run = <A, E>(effect: Effect.Effect<A, E, HttpClient.HttpClient>) =>
-    Effect.runPromise(effect.pipe(Effect.provide(httpLayer)));
+let browserSessionBootstrap: Promise<void> | undefined;
 
-  let session = await run(
-    clientEffect.pipe(Effect.flatMap((client) => client.auth.session({ headers: {} }))),
-  );
-  if (session.authenticated) return;
-  if (!credential) {
-    throw new Error(
-      "This Grillme link is missing its local pairing token. Restart `pnpm dev` or `npx grillme` and use the URL it opens.",
+function bootstrapBrowserSession(): Promise<void> {
+  if (browserSessionBootstrap) return browserSessionBootstrap;
+
+  browserSessionBootstrap = (async () => {
+    const currentUrl = new URL(window.location.href);
+    const credential = currentUrl.searchParams.get("pairingToken")?.trim() || undefined;
+    const request = async (path: string, init?: RequestInit): Promise<unknown> => {
+      // This is the browser-only auth boundary; the local server sets the session cookie here.
+      // @effect-diagnostics-next-line globalFetch:off
+      const response = await fetch(path, { ...init, credentials: "include" });
+      if (!response.ok) {
+        throw new Error(`Local Grillme request ${path} failed with HTTP ${response.status}.`);
+      }
+      return response.json();
+    };
+
+    let session = (await request("/api/auth/session")) as { authenticated: boolean };
+    if (session.authenticated) return;
+    if (!credential) {
+      throw new Error(
+        "This Grillme link is missing its local pairing token. Restart `pnpm dev` or `npx grillme` and use the URL it opens.",
+      );
+    }
+
+    await request("/api/auth/browser-session", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ credential }),
+    });
+    currentUrl.searchParams.delete("pairingToken");
+    window.history.replaceState(
+      {},
+      "",
+      `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`,
     );
-  }
+    session = (await request("/api/auth/session")) as { authenticated: boolean };
+    if (!session.authenticated)
+      throw new Error("The local Grillme session could not be authenticated.");
+  })();
 
-  await run(
-    clientEffect.pipe(
-      Effect.flatMap((client) => client.auth.browserSession({ payload: { credential } })),
-    ),
-  );
-  const cleanUrl = stripPairingTokenFromUrl(currentUrl);
-  window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
-  session = await run(
-    clientEffect.pipe(Effect.flatMap((client) => client.auth.session({ headers: {} }))),
-  );
-  if (!session.authenticated)
-    throw new Error("The local Grillme session could not be authenticated.");
+  return browserSessionBootstrap;
 }
 
 function protocolLayer() {

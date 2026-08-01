@@ -1,5 +1,4 @@
 import {
-  AuthAdministrativeScopes,
   AuthStandardClientScopes,
   type AuthEnvironmentScope,
   type AuthPairingLink,
@@ -13,7 +12,6 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as PubSub from "effect/PubSub";
-import * as Ref from "effect/Ref";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 
@@ -221,33 +219,9 @@ export class PairingGrantStore extends Context.Service<
       },
     ) => Effect.Effect<BootstrapGrant, BootstrapCredentialError>;
   }
->()("t3/auth/PairingGrantStore") {}
-
-interface StoredBootstrapGrant extends BootstrapGrant {
-  readonly remainingUses: number | "unbounded";
-}
-
-type ConsumeResult =
-  | {
-      readonly _tag: "error";
-      readonly reason: "not-found" | "expired";
-      readonly error: BootstrapCredentialError;
-    }
-  | {
-      readonly _tag: "success";
-      readonly grant: BootstrapGrant;
-    };
+>()("@grillme/server/auth/PairingGrantStore") {}
 
 const DEFAULT_ONE_TIME_TOKEN_TTL_MINUTES = Duration.minutes(5);
-// The desktop-bootstrap grant rides on a trusted IPC channel (fd3 or
-// stdin) at backend launch, so it doesn't have to be short-lived the
-// way a user-facing pairing link does. Letting it live for the
-// lifetime of the backend process (24h is more than long enough for
-// practical desktop use, and well under "forever" in case the seed
-// gets logged anywhere by accident) means a page reload past the 5-min
-// window can still recover by re-bootstrapping rather than locking
-// the user out of the backend.
-const DESKTOP_BOOTSTRAP_TTL_HOURS = Duration.hours(24);
 // A dev server's startup token is read off a log by whoever (or whatever) is
 // driving the session, often minutes later — after a `node --watch` restart, a
 // detour into another task, or a hand-off to the person actually doing the
@@ -266,7 +240,6 @@ export const make = Effect.gen(function* () {
   const crypto = yield* Crypto.Crypto;
   const config = yield* ServerConfig.ServerConfig;
   const pairingLinks = yield* AuthPairingLinks.AuthPairingLinkRepository;
-  const seededGrantsRef = yield* Ref.make(new Map<string, StoredBootstrapGrant>());
   const changesPubSub = yield* PubSub.unbounded<BootstrapCredentialChange>();
   const generatePairingToken = Effect.gen(function* () {
     let credential = "";
@@ -292,13 +265,6 @@ export const make = Effect.gen(function* () {
     return credential;
   });
 
-  const seedGrant = (credential: string, grant: StoredBootstrapGrant) =>
-    Ref.update(seededGrantsRef, (current) => {
-      const next = new Map(current);
-      next.set(credential, grant);
-      return next;
-    });
-
   const emitUpsert = (pairingLink: AuthPairingLink) =>
     PubSub.publish(changesPubSub, {
       type: "pairingLinkUpserted",
@@ -310,24 +276,6 @@ export const make = Effect.gen(function* () {
       type: "pairingLinkRemoved",
       id,
     }).pipe(Effect.asVoid);
-
-  if (config.desktopBootstrapToken) {
-    const now = yield* DateTime.now;
-    yield* seedGrant(config.desktopBootstrapToken, {
-      method: "desktop-bootstrap",
-      scopes: AuthAdministrativeScopes,
-      subject: "desktop-bootstrap",
-      expiresAt: DateTime.add(now, {
-        milliseconds: Duration.toMillis(DESKTOP_BOOTSTRAP_TTL_HOURS),
-      }),
-      // Unbounded uses so the renderer can re-exchange the seed for a
-      // fresh bearer session after a page reload (or after the prior
-      // bearer expires). The seed itself stays inside the desktop
-      // process and the rendered page, both of which the user already
-      // implicitly trusts.
-      remainingUses: "unbounded",
-    });
-  }
 
   const listActive: PairingGrantStore["Service"]["listActive"] = Effect.fn(
     "PairingGrantStore.listActive",
@@ -437,83 +385,6 @@ export const make = Effect.gen(function* () {
   const consume: PairingGrantStore["Service"]["consume"] = Effect.fn("PairingGrantStore.consume")(
     function* (credential, input) {
       const now = yield* DateTime.now;
-      const seededResult: ConsumeResult = yield* Ref.modify(
-        seededGrantsRef,
-        (current): readonly [ConsumeResult, Map<string, StoredBootstrapGrant>] => {
-          const grant = current.get(credential);
-          if (!grant) {
-            return [
-              {
-                _tag: "error",
-                reason: "not-found",
-                error: new UnknownBootstrapCredentialError({}),
-              },
-              current,
-            ];
-          }
-
-          const next = new Map(current);
-          if (DateTime.isGreaterThanOrEqualTo(now, grant.expiresAt)) {
-            next.delete(credential);
-            return [
-              {
-                _tag: "error",
-                reason: "expired",
-                error: new ExpiredBootstrapCredentialError({}),
-              },
-              next,
-            ];
-          }
-
-          if (grant.proofKeyThumbprint && grant.proofKeyThumbprint !== input?.proofKeyThumbprint) {
-            return [
-              {
-                _tag: "error",
-                reason: "not-found",
-                error: new BootstrapCredentialProofKeyMismatchError({}),
-              },
-              next,
-            ];
-          }
-
-          const remainingUses = grant.remainingUses;
-          if (typeof remainingUses === "number") {
-            if (remainingUses <= 1) {
-              next.delete(credential);
-            } else {
-              next.set(credential, {
-                ...grant,
-                remainingUses: remainingUses - 1,
-              });
-            }
-          }
-
-          return [
-            {
-              _tag: "success",
-              grant: {
-                method: grant.method,
-                scopes: grant.scopes,
-                subject: grant.subject,
-                ...(grant.label ? { label: grant.label } : {}),
-                ...(grant.proofKeyThumbprint
-                  ? { proofKeyThumbprint: grant.proofKeyThumbprint }
-                  : {}),
-                expiresAt: grant.expiresAt,
-              } satisfies BootstrapGrant,
-            },
-            next,
-          ];
-        },
-      );
-
-      if (seededResult._tag === "success") {
-        return seededResult.grant;
-      }
-      if (seededResult.reason !== "not-found") {
-        return yield* seededResult.error;
-      }
-
       const consumed = yield* pairingLinks
         .consumeAvailable({
           credential,

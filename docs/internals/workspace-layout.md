@@ -1,63 +1,28 @@
 # Workspace layout
 
-> For maintainers. Using T3 Code? See [docs/user](../user/).
+The repository is a small pnpm workspace driven by [Vite+](https://vite.plus) (`vp`).
 
-A pnpm workspace driven by [vite-plus](https://vite.plus) (`vp`). See [scripts.md](./scripts.md) for
-the task commands.
+## Applications
 
-## apps
+- `apps/grillme`: the local React/Vite question-and-answer client.
+- `apps/server`: the local HTTP/WebSocket server and published `grillme` CLI.
 
-- `apps/server` (`t3`): the execution runtime and the published CLI. Owns orchestration, provider
-  drivers, checkpointing, VCS, terminals, filesystem access, auth, and the HTTP + WebSocket surface.
-  Also serves the built web app.
-- `apps/web` (`@grillme/web`): React + Vite UI. Consumes the shared client runtime and adds routing,
-  components, and web-specific platform layers.
-- `apps/desktop` (`@grillme/desktop`): Electron shell. Supervises a desktop-scoped `t3` backend,
-  loads the web bundle over the `t3code://` protocol, and owns SSH-managed remote environments.
-- `apps/mobile` (`@grillme/mobile`): Expo/React Native client. Same client runtime composition as
-  web, different platform layer and UI.
-- `apps/marketing` (`@grillme/marketing`): Astro marketing site.
+## Packages
 
-## packages
+- `packages/contracts`: shared Effect schemas, RPC definitions, orchestration events, and settings.
+- `packages/shared`: framework-agnostic utilities used by the server and client.
+- `packages/client-runtime`: shared RPC and client state helpers.
+- `packages/effect-acp`: Agent Client Protocol support for ACP providers.
+- `packages/effect-codex-app-server`: the Codex app-server JSON-RPC client.
 
-- `packages/contracts` (`@grillme/contracts`): shared Effect Schema definitions. RPC group,
-  orchestration commands/events/read model, auth scopes, environment descriptors, settings.
-- `packages/shared` (`@grillme/shared`): framework-agnostic utilities used by server and clients
-  (`DrainableWorker`, git and source-control helpers, relay auth and signing, DPoP, semver, logging,
-  observability, and more).
-- `packages/client-runtime` (`@grillme/client-runtime`): connection lifecycle, authorization, RPC
-  session, environment registry, and Atom-based domain state shared by web and mobile. See its
-  [README](../../packages/client-runtime/README.md).
-- `packages/ssh` (`@grillme/ssh`): SSH config parsing, auth prompts, command execution, and the
-  tunnel/environment manager behind desktop-managed SSH environments.
-- `packages/tailscale` (`@grillme/tailscale`): Tailscale CLI wrapper, including the
-  `ensureTailscaleServe` / `disableTailscaleServe` serve lifecycle the server drives.
-- `packages/effect-acp` (`effect-acp`): Effect client and agent implementation of the Agent Client
-  Protocol, used by ACP-speaking provider drivers.
-- `packages/effect-codex-app-server` (`effect-codex-app-server`): Effect client for the
-  `codex app-server` JSON-RPC protocol.
+## Tooling
 
-## infra
-
-- `infra/relay` (`t3code-relay`): the hosted T3 Connect relay, deployed with Alchemy. Handles
-  environment discovery, cloud-side records, and mobile notifications. It is not in the hot path;
-  after connect, client traffic goes directly to the environment. See
-  [t3-connect.md](./t3-connect.md).
-
-## Other top-level directories
-
-- `scripts/`: workspace tooling run through `vp run`. Dev runner, desktop artifact builds, release
-  helpers, mobile static checks and showcase capture, update-manifest merging.
-- `assets/`: brand and app icon sources per channel (`dev`, `nightly`, `prod`).
+- `scripts/`: the local dev runner and small workspace utilities.
 - `patches/`: pnpm patches for pinned upstream dependencies.
-- `oxlint-plugin-t3code/`: repo-specific lint rules.
-- `experiments/`: throwaway prototypes. Not part of the shipped build.
-- `docs/`: this documentation tree.
+- `docs/`: user and maintainer documentation.
+
+There are no mobile, desktop, marketing, native, relay, or cloud workspaces.
 
 ## Import conventions
 
-`@grillme/shared` and `@grillme/client-runtime` use explicit subpath exports with no barrel index and
-no root export. Import the narrow path (`@grillme/shared/DrainableWorker`,
-`@grillme/client-runtime/state/threads`) rather than the package root. Files that are not exported
-are implementation details. `@grillme/contracts` does export a root alongside `./settings` and
-`./relay`.
+`@grillme/shared` and `@grillme/client-runtime` use explicit subpath exports and intentionally have no root barrel. Import the narrow path you need. `@grillme/contracts` exposes its root and focused subpaths.

@@ -12,7 +12,7 @@ import { runServerCommand } from "./cli/server.ts";
 
 const CliRuntimeLayer = Layer.mergeAll(NodeServices.layer, NetService.layer);
 
-export const makeCli = (_options?: { readonly cloudEnabled?: boolean }) =>
+export const makeCli = () =>
   Command.make("grillme", { ...grillmeServerCommandFlags }).pipe(
     Command.withDescription("Start a local Grillme interview session."),
     Command.withHandler((flags) =>
@@ -24,11 +24,8 @@ export const makeCli = (_options?: { readonly cloudEnabled?: boolean }) =>
         cwd: Option.none(),
         devUrl: Option.none(),
         noBrowser: flags.noBrowser,
-        bootstrapFd: Option.none(),
         autoBootstrapProjectFromCwd: Option.some(true),
         logWebSocketEvents: Option.none(),
-        tailscaleServeEnabled: Option.some(false),
-        tailscaleServePort: Option.none(),
       }),
     ),
   );

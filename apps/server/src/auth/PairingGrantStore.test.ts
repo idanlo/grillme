@@ -1,10 +1,8 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { expect, it } from "@effect/vitest";
-import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
-import * as TestClock from "effect/testing/TestClock";
 
 import * as ServerConfig from "../config.ts";
 import * as AuthPairingLinks from "../persistence/AuthPairingLinks.ts";
@@ -12,28 +10,25 @@ import { PersistenceSqlError } from "../persistence/Errors.ts";
 import { SqlitePersistenceMemory } from "../persistence/Layers/Sqlite.ts";
 import * as PairingGrantStore from "./PairingGrantStore.ts";
 
-const makeServerConfigLayer = (
-  overrides?: Partial<Pick<ServerConfig.ServerConfig["Service"], "desktopBootstrapToken">>,
-) =>
+const makeServerConfigLayer = () =>
   Layer.effect(
     ServerConfig.ServerConfig,
     Effect.gen(function* () {
       const config = yield* ServerConfig.ServerConfig;
       return {
         ...config,
-        ...overrides,
       } satisfies ServerConfig.ServerConfig["Service"];
     }),
   ).pipe(
-    Layer.provide(ServerConfig.layerTest(process.cwd(), { prefix: "t3-auth-bootstrap-test-" })),
+    Layer.provide(
+      ServerConfig.layerTest(process.cwd(), { prefix: "grillme-auth-bootstrap-test-" }),
+    ),
   );
 
-const makePairingGrantStoreLayer = (
-  overrides?: Partial<Pick<ServerConfig.ServerConfig["Service"], "desktopBootstrapToken">>,
-) =>
+const makePairingGrantStoreLayer = () =>
   PairingGrantStore.layer.pipe(
     Layer.provide(SqlitePersistenceMemory),
-    Layer.provide(makeServerConfigLayer(overrides)),
+    Layer.provide(makeServerConfigLayer()),
   );
 
 const makePairingGrantStoreTestLayer = (
@@ -79,7 +74,6 @@ it.layer(NodeServices.layer)("PairingGrantStore.layer", (it) => {
         "orchestration:operate",
         "terminal:operate",
         "review:write",
-        "relay:read",
       ]);
       expect(first.subject).toBe("one-time-token");
       expect(first.label).toBe("Julius iPhone");
@@ -135,63 +129,6 @@ it.layer(NodeServices.layer)("PairingGrantStore.layer", (it) => {
       expect(wrong.message).toContain("proof key mismatch");
       expect(consumed.proofKeyThumbprint).toBe("client-proof-key-thumbprint");
     }).pipe(Effect.provide(makePairingGrantStoreLayer())),
-  );
-
-  it.effect("seeds the desktop bootstrap credential as a reusable grant", () =>
-    Effect.gen(function* () {
-      const bootstrapCredentials = yield* PairingGrantStore.PairingGrantStore;
-      const first = yield* bootstrapCredentials.consume("desktop-bootstrap-token");
-      const second = yield* bootstrapCredentials.consume("desktop-bootstrap-token");
-      const third = yield* bootstrapCredentials.consume("desktop-bootstrap-token");
-
-      expect(first.method).toBe("desktop-bootstrap");
-      expect(first.scopes).toEqual([
-        "orchestration:read",
-        "orchestration:operate",
-        "terminal:operate",
-        "review:write",
-        "relay:read",
-        "access:read",
-        "access:write",
-        "relay:write",
-      ]);
-      expect(first.subject).toBe("desktop-bootstrap");
-      expect(second.method).toBe("desktop-bootstrap");
-      expect(third.method).toBe("desktop-bootstrap");
-    }).pipe(
-      Effect.provide(
-        makePairingGrantStoreLayer({
-          desktopBootstrapToken: "desktop-bootstrap-token",
-        }),
-      ),
-    ),
-  );
-
-  it.effect("reports seeded desktop bootstrap credentials as expired after their ttl", () =>
-    Effect.gen(function* () {
-      const bootstrapCredentials = yield* PairingGrantStore.PairingGrantStore;
-
-      // The desktop-bootstrap grant lives for 24h. Within that window
-      // it stays reusable.
-      yield* TestClock.adjust(Duration.hours(12));
-      const stillValid = yield* bootstrapCredentials.consume("desktop-bootstrap-token");
-      expect(stillValid.method).toBe("desktop-bootstrap");
-
-      yield* TestClock.adjust(Duration.hours(13));
-      const expired = yield* Effect.flip(bootstrapCredentials.consume("desktop-bootstrap-token"));
-
-      expect(expired._tag).toBe("ExpiredBootstrapCredentialError");
-      expect(expired.message).toContain("Bootstrap credential expired");
-    }).pipe(
-      Effect.provide(
-        Layer.merge(
-          makePairingGrantStoreLayer({
-            desktopBootstrapToken: "desktop-bootstrap-token",
-          }),
-          TestClock.layer(),
-        ),
-      ),
-    ),
   );
 
   it.effect("lists and revokes active pairing links", () =>

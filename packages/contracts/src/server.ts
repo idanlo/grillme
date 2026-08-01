@@ -1,12 +1,11 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
-import { ExecutionEnvironmentDescriptor, ServerSelfUpdateMethod } from "./environment.ts";
+import { ExecutionEnvironmentDescriptor } from "./environment.ts";
 import { ServerAuthDescriptor } from "./auth.ts";
 import {
   ForwardCompatibleArray,
   IsoDateTime,
   NonNegativeInt,
-  PositiveInt,
   ProjectId,
   ThreadId,
   TrimmedNonEmptyString,
@@ -211,206 +210,8 @@ export const isProviderAvailable = (snapshot: ServerProvider): boolean =>
 export const ServerObservability = Schema.Struct({
   logsDirectoryPath: TrimmedNonEmptyString,
   localTracingEnabled: Schema.Boolean,
-  otlpTracesUrl: Schema.optional(TrimmedNonEmptyString),
-  otlpTracesEnabled: Schema.Boolean,
-  otlpMetricsUrl: Schema.optional(TrimmedNonEmptyString),
-  otlpMetricsEnabled: Schema.Boolean,
 });
 export type ServerObservability = typeof ServerObservability.Type;
-
-export const ServerTraceDiagnosticsErrorKind = Schema.Literals([
-  "trace-file-not-found",
-  "trace-file-read-failed",
-]);
-export type ServerTraceDiagnosticsErrorKind = typeof ServerTraceDiagnosticsErrorKind.Type;
-
-export const ServerTraceDiagnosticsSpanSummary = Schema.Struct({
-  name: TrimmedNonEmptyString,
-  count: NonNegativeInt,
-  failureCount: NonNegativeInt,
-  totalDurationMs: Schema.Number,
-  averageDurationMs: Schema.Number,
-  maxDurationMs: Schema.Number,
-});
-export type ServerTraceDiagnosticsSpanSummary = typeof ServerTraceDiagnosticsSpanSummary.Type;
-
-export const ServerTraceDiagnosticsFailureSummary = Schema.Struct({
-  name: TrimmedNonEmptyString,
-  cause: TrimmedNonEmptyString,
-  count: NonNegativeInt,
-  lastSeenAt: Schema.DateTimeUtc,
-  traceId: TrimmedNonEmptyString,
-  spanId: TrimmedNonEmptyString,
-});
-export type ServerTraceDiagnosticsFailureSummary = typeof ServerTraceDiagnosticsFailureSummary.Type;
-
-export const ServerTraceDiagnosticsRecentFailure = Schema.Struct({
-  name: TrimmedNonEmptyString,
-  cause: TrimmedNonEmptyString,
-  durationMs: Schema.Number,
-  endedAt: Schema.DateTimeUtc,
-  traceId: TrimmedNonEmptyString,
-  spanId: TrimmedNonEmptyString,
-});
-export type ServerTraceDiagnosticsRecentFailure = typeof ServerTraceDiagnosticsRecentFailure.Type;
-
-export const ServerTraceDiagnosticsSpanOccurrence = Schema.Struct({
-  name: TrimmedNonEmptyString,
-  durationMs: Schema.Number,
-  endedAt: Schema.DateTimeUtc,
-  traceId: TrimmedNonEmptyString,
-  spanId: TrimmedNonEmptyString,
-});
-export type ServerTraceDiagnosticsSpanOccurrence = typeof ServerTraceDiagnosticsSpanOccurrence.Type;
-
-export const ServerTraceDiagnosticsLogEvent = Schema.Struct({
-  spanName: TrimmedNonEmptyString,
-  level: TrimmedNonEmptyString,
-  message: TrimmedNonEmptyString,
-  seenAt: Schema.DateTimeUtc,
-  traceId: TrimmedNonEmptyString,
-  spanId: TrimmedNonEmptyString,
-});
-export type ServerTraceDiagnosticsLogEvent = typeof ServerTraceDiagnosticsLogEvent.Type;
-
-export const ServerTraceDiagnosticsResult = Schema.Struct({
-  traceFilePath: TrimmedNonEmptyString,
-  scannedFilePaths: Schema.Array(TrimmedNonEmptyString),
-  readAt: Schema.DateTimeUtc,
-  recordCount: NonNegativeInt,
-  parseErrorCount: NonNegativeInt,
-  firstSpanAt: Schema.Option(Schema.DateTimeUtc),
-  lastSpanAt: Schema.Option(Schema.DateTimeUtc),
-  failureCount: NonNegativeInt,
-  interruptionCount: NonNegativeInt,
-  slowSpanThresholdMs: NonNegativeInt,
-  slowSpanCount: NonNegativeInt,
-  logLevelCounts: Schema.Record(TrimmedNonEmptyString, NonNegativeInt),
-  topSpansByCount: Schema.Array(ServerTraceDiagnosticsSpanSummary),
-  slowestSpans: Schema.Array(ServerTraceDiagnosticsSpanOccurrence),
-  commonFailures: Schema.Array(ServerTraceDiagnosticsFailureSummary),
-  latestFailures: Schema.Array(ServerTraceDiagnosticsRecentFailure),
-  latestWarningAndErrorLogs: Schema.Array(ServerTraceDiagnosticsLogEvent),
-  partialFailure: Schema.Option(Schema.Boolean),
-  error: Schema.Option(
-    Schema.Struct({
-      kind: ServerTraceDiagnosticsErrorKind,
-      message: TrimmedNonEmptyString,
-    }),
-  ),
-});
-export type ServerTraceDiagnosticsResult = typeof ServerTraceDiagnosticsResult.Type;
-
-export const ServerProcessSignal = Schema.Literals(["SIGINT", "SIGKILL"]);
-export type ServerProcessSignal = typeof ServerProcessSignal.Type;
-
-export const ServerProcessDiagnosticsEntry = Schema.Struct({
-  pid: PositiveInt,
-  startTimeMs: NonNegativeInt,
-  ppid: NonNegativeInt,
-  pgid: Schema.Option(Schema.Int),
-  status: TrimmedNonEmptyString,
-  cpuPercent: Schema.Number,
-  rssBytes: NonNegativeInt,
-  elapsed: TrimmedNonEmptyString,
-  command: TrimmedNonEmptyString,
-  depth: NonNegativeInt,
-  childPids: Schema.Array(PositiveInt),
-});
-export type ServerProcessDiagnosticsEntry = typeof ServerProcessDiagnosticsEntry.Type;
-
-export const ServerProcessDiagnosticsResult = Schema.Struct({
-  serverPid: PositiveInt,
-  readAt: Schema.DateTimeUtc,
-  processCount: NonNegativeInt,
-  totalRssBytes: NonNegativeInt,
-  totalCpuPercent: Schema.Number,
-  processes: Schema.Array(ServerProcessDiagnosticsEntry),
-  error: Schema.Option(
-    Schema.Struct({
-      message: TrimmedNonEmptyString,
-    }),
-  ),
-});
-export type ServerProcessDiagnosticsResult = typeof ServerProcessDiagnosticsResult.Type;
-
-export const ServerProcessResourceHistoryInput = Schema.Struct({
-  windowMs: NonNegativeInt,
-  bucketMs: NonNegativeInt,
-});
-export type ServerProcessResourceHistoryInput = typeof ServerProcessResourceHistoryInput.Type;
-
-export const ServerProcessResourceHistoryBucket = Schema.Struct({
-  startedAt: Schema.DateTimeUtc,
-  endedAt: Schema.DateTimeUtc,
-  avgCpuPercent: Schema.Number,
-  maxCpuPercent: Schema.Number,
-  maxRssBytes: NonNegativeInt,
-  maxProcessCount: NonNegativeInt,
-});
-export type ServerProcessResourceHistoryBucket = typeof ServerProcessResourceHistoryBucket.Type;
-
-export const ServerProcessResourceHistorySummary = Schema.Struct({
-  processKey: TrimmedNonEmptyString,
-  pid: PositiveInt,
-  ppid: NonNegativeInt,
-  command: TrimmedNonEmptyString,
-  depth: NonNegativeInt,
-  isServerRoot: Schema.Boolean,
-  firstSeenAt: Schema.DateTimeUtc,
-  lastSeenAt: Schema.DateTimeUtc,
-  currentCpuPercent: Schema.Number,
-  avgCpuPercent: Schema.Number,
-  maxCpuPercent: Schema.Number,
-  cpuSecondsApprox: Schema.Number,
-  currentRssBytes: NonNegativeInt,
-  maxRssBytes: NonNegativeInt,
-  sampleCount: NonNegativeInt,
-});
-export type ServerProcessResourceHistorySummary = typeof ServerProcessResourceHistorySummary.Type;
-
-export const ServerProcessResourceHistoryFailureTag = Schema.Literals([
-  "ProcessDiagnosticsQueryTimeoutError",
-  "ProcessDiagnosticsQueryFailedError",
-  "ProcessDiagnosticsServerProcessSignalError",
-  "ProcessDiagnosticsNotDescendantError",
-  "ProcessDiagnosticsSignalFailedError",
-]);
-export type ServerProcessResourceHistoryFailureTag =
-  typeof ServerProcessResourceHistoryFailureTag.Type;
-
-export const ServerProcessResourceHistoryResult = Schema.Struct({
-  readAt: Schema.DateTimeUtc,
-  windowMs: NonNegativeInt,
-  bucketMs: NonNegativeInt,
-  sampleIntervalMs: NonNegativeInt,
-  retainedSampleCount: NonNegativeInt,
-  totalCpuSecondsApprox: Schema.Number,
-  buckets: Schema.Array(ServerProcessResourceHistoryBucket),
-  topProcesses: Schema.Array(ServerProcessResourceHistorySummary),
-  error: Schema.Option(
-    Schema.Struct({
-      failureTag: ServerProcessResourceHistoryFailureTag,
-      message: TrimmedNonEmptyString,
-    }),
-  ),
-});
-export type ServerProcessResourceHistoryResult = typeof ServerProcessResourceHistoryResult.Type;
-
-export const ServerSignalProcessInput = Schema.Struct({
-  pid: PositiveInt,
-  startTimeMs: NonNegativeInt,
-  signal: ServerProcessSignal,
-});
-export type ServerSignalProcessInput = typeof ServerSignalProcessInput.Type;
-
-export const ServerSignalProcessResult = Schema.Struct({
-  pid: PositiveInt,
-  signal: ServerProcessSignal,
-  signaled: Schema.Boolean,
-  message: Schema.Option(TrimmedNonEmptyString),
-});
-export type ServerSignalProcessResult = typeof ServerSignalProcessResult.Type;
 
 export const ServerConfig = Schema.Struct({
   environment: ExecutionEnvironmentDescriptor,
@@ -579,47 +380,5 @@ export class ServerProviderUpdateError extends Schema.TaggedErrorClass<ServerPro
 ) {
   override get message(): string {
     return `Provider update failed for ${this.provider}: ${this.reason}`;
-  }
-}
-
-export const ServerSelfUpdateInput = Schema.Struct({
-  /** Exact npm version of the `t3` package to install (never a dist-tag, so
-      the server and the acknowledging client agree on what was requested). */
-  targetVersion: TrimmedNonEmptyString,
-});
-export type ServerSelfUpdateInput = typeof ServerSelfUpdateInput.Type;
-
-/** Acknowledgement that the update artifact is installed and the server is
-    about to restart into it — the connection will drop moments later. */
-export const ServerSelfUpdateResult = Schema.Struct({
-  targetVersion: TrimmedNonEmptyString,
-  method: ServerSelfUpdateMethod,
-});
-export type ServerSelfUpdateResult = typeof ServerSelfUpdateResult.Type;
-
-export const ServerSelfUpdateProgressStage = Schema.Literals(["downloading", "installing"]);
-export type ServerSelfUpdateProgressStage = typeof ServerSelfUpdateProgressStage.Type;
-
-export const ServerSelfUpdateProgressEvent = Schema.Union([
-  Schema.Struct({
-    type: Schema.Literal("progress"),
-    stage: ServerSelfUpdateProgressStage,
-  }),
-  Schema.Struct({
-    type: Schema.Literal("complete"),
-    result: ServerSelfUpdateResult,
-  }),
-]);
-export type ServerSelfUpdateProgressEvent = typeof ServerSelfUpdateProgressEvent.Type;
-
-export class ServerSelfUpdateError extends Schema.TaggedErrorClass<ServerSelfUpdateError>()(
-  "ServerSelfUpdateError",
-  {
-    reason: TrimmedNonEmptyString,
-    cause: Schema.optional(Schema.Defect()),
-  },
-) {
-  override get message(): string {
-    return `Server update failed: ${this.reason}`;
   }
 }
