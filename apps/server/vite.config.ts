@@ -29,6 +29,11 @@ export default mergeConfig(
           dependsOn: ["@grillme/grillme#build"],
           cache: false,
         },
+        serve: {
+          command: "node dist/bin.mjs",
+          dependsOn: ["build"],
+          cache: false,
+        },
       },
     },
     pack: {
