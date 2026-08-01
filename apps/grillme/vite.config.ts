@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite-plus";
 
@@ -11,7 +12,7 @@ const proxyTarget =
   Number.isInteger(backendPort) && backendPort > 0 ? `http://localhost:${backendPort}/` : undefined;
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     tsconfigPaths: true,
     dedupe: ["react", "react-dom"],

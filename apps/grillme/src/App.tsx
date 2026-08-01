@@ -12,10 +12,25 @@ import {
   type ProviderApprovalDecision,
   type ServerConfig,
   type ServerConfigStreamEvent,
-  type UserInputQuestion,
 } from "@grillme/contracts";
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { ChevronRightIcon, InfoIcon, SquarePenIcon } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { Approval } from "@/components/approval";
+import { Composer } from "@/components/composer";
+import { DetailsSheet } from "@/components/details-sheet";
+import { OPTION_KEYS, Question } from "@/components/question";
+import { Sigil } from "@/components/sigil";
+import { ChatBubble, DayDivider, SystemNote, TypingBubble } from "@/components/thread";
+import { Marker, MarkerContent } from "@/components/ui/marker";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller";
 import { buildFirstTurn, displayUserMessage } from "./protocol";
 import { connectRpc, type GrillmeRpc } from "./rpc";
 import {
@@ -26,7 +41,6 @@ import {
   deriveWorkingStatus,
   handoffFilename,
   type GrillAnswer,
-  type PendingApprovalRequest,
 } from "./transcript";
 
 type ConnectionState = "connecting" | "ready" | "error";
@@ -38,24 +52,15 @@ interface ModelChoice {
   selection: ModelSelection;
 }
 
-type StreamItem =
-  | {
-      kind: "said";
-      key: string;
-      role: "user" | "assistant";
-      text: string;
-      streaming: boolean;
-      at: string;
-    }
-  | {
-      kind: "locked";
-      key: string;
-      entry: GrillAnswer;
-      index: number;
-      at: string;
-    };
-
-const OPTION_KEYS = "ABCDEFGH";
+/** One bubble in the thread, already resolved to a side. */
+interface Row {
+  key: string;
+  side: "start" | "end";
+  text: string;
+  at: string;
+  streaming: boolean;
+  divider: string | null;
+}
 
 function id<T>(schema: { readonly make: (value: string) => T }): T {
   // This is an imperative browser boundary; ids are passed into the Effect-backed RPC layer.
@@ -77,6 +82,12 @@ function shortPath(path: string | null): string {
   if (!path) return "no workspace";
   const parts = path.split("/").filter(Boolean);
   return parts.length <= 2 ? `/${parts.join("/")}` : `…/${parts.slice(-2).join("/")}`;
+}
+
+function clockTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
 function answerText(answer: GrillAnswer["answer"]): string {
@@ -120,284 +131,60 @@ function applyServerConfigEvent(
   }
 }
 
-/* ── chrome ─────────────────────────────────────────────────────────────── */
+/* ── nav bar ────────────────────────────────────────────────────────────── */
 
-const Sigil = memo(function Sigil() {
-  return (
-    <svg className="sigil" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M8 1.5 C 9.6 4.2 12.5 5.4 12.5 9 a4.5 4.5 0 0 1-9 0 c0-1.7.8-2.6 1.6-3.6.2 1.2.7 1.9 1.5 2.3C6.1 5.6 6.6 3.4 8 1.5Z" />
-    </svg>
-  );
-});
-
-function StatusLamp({ state }: { readonly state: ConnectionState }) {
-  const label =
-    state === "ready" ? "connected" : state === "connecting" ? "connecting" : "no server";
-  return (
-    <span className={`lamp lamp-${state}`}>
-      <i aria-hidden="true" />
-      {label}
-    </span>
-  );
-}
-
-/* ── stream turns ───────────────────────────────────────────────────────── */
-
-const Said = memo(function Said({
-  role,
-  text,
-  streaming,
+function NavBar({
+  subtitle,
+  showNew,
+  onNewGrill,
+  onOpenDetails,
 }: {
-  readonly role: "user" | "assistant";
-  readonly text: string;
-  readonly streaming: boolean;
+  readonly subtitle: string;
+  readonly showNew: boolean;
+  readonly onNewGrill: () => void;
+  readonly onOpenDetails: () => void;
 }) {
   return (
-    <article className={`turn turn-${role}`}>
-      <span className="turn-sigil" aria-hidden="true">
-        {role === "user" ? "❯" : "◇"}
-      </span>
-      <div className="turn-body">
-        <span className="turn-who">{role === "user" ? "you" : "grillme"}</span>
-        <p className="turn-text">
-          {text}
-          {streaming ? <span className="caret caret-inline" aria-hidden="true" /> : null}
-        </p>
-      </div>
-    </article>
-  );
-});
-
-const Locked = memo(function Locked({
-  entry,
-  index,
-}: {
-  readonly entry: GrillAnswer;
-  readonly index: number;
-}) {
-  return (
-    <article className="turn turn-locked">
-      <span className="turn-sigil" aria-hidden="true">
-        ✓
-      </span>
-      <div className="turn-body">
-        <span className="turn-who">
-          decision {String(index).padStart(2, "0")} · {entry.question.header.toLowerCase()}
-        </span>
-        <p className="locked-question">{entry.question.question}</p>
-        <p className="locked-answer">{answerText(entry.answer)}</p>
-      </div>
-    </article>
-  );
-});
-
-function Thinking({ note }: { readonly note: string }) {
-  return (
-    <article className="turn turn-thinking" aria-live="polite">
-      <span className="turn-sigil" aria-hidden="true">
-        ◇
-      </span>
-      <div className="turn-body">
-        <span className="turn-who">grillme</span>
-        <p className="thinking-line">
-          <span className="scan" aria-hidden="true" />
-          {note}
-        </p>
-      </div>
-    </article>
-  );
-}
-
-interface DecisionProps {
-  question: UserInputQuestion;
-  questionIndex: number;
-  questionCount: number;
-  decisionNumber: number;
-  selected: ReadonlyArray<string>;
-  busy: boolean;
-  onToggle: (label: string) => void;
-  onSubmit: () => void;
-}
-
-const Decision = memo(function Decision({
-  question,
-  questionIndex,
-  questionCount,
-  decisionNumber,
-  selected,
-  busy,
-  onToggle,
-  onSubmit,
-}: DecisionProps) {
-  const hasAnswer = selected.length > 0;
-  return (
-    <section className="decision" aria-labelledby="active-question">
-      <header className="decision-head">
-        <span className="decision-tag">
-          decision {String(decisionNumber).padStart(2, "0")} · {question.header.toLowerCase()}
-        </span>
-        {questionCount > 1 ? (
-          <span className="decision-count">
-            {questionIndex + 1}/{questionCount}
-          </span>
-        ) : null}
-      </header>
-
-      <h2 id="active-question">{question.question}</h2>
-
-      <div className="options" role={question.multiSelect ? "group" : "radiogroup"}>
-        {question.options.map((option, index) => {
-          const active = selected.includes(option.label);
-          return (
-            <button
-              key={option.label}
-              type="button"
-              role={question.multiSelect ? "checkbox" : "radio"}
-              aria-checked={active}
-              className={`option${active ? " is-picked" : ""}`}
-              style={{ animationDelay: `${index * 45}ms` }}
-              onClick={() => onToggle(option.label)}
-            >
-              <kbd>{OPTION_KEYS[index] ?? "·"}</kbd>
-              <span className="option-body">
-                <span className="option-label">
-                  {option.label}
-                  {index === 0 ? <em>recommended</em> : null}
-                </span>
-                <span className="option-desc">{option.description}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <footer className="decision-foot">
-        <span>
-          {question.multiSelect ? "pick any" : "pick one"} — press a key, or type your own answer
-          below
-        </span>
-        <button type="button" className="lock" disabled={!hasAnswer || busy} onClick={onSubmit}>
-          {busy ? "sending…" : questionIndex + 1 < questionCount ? "next ⏎" : "lock it in ⏎"}
-        </button>
-      </footer>
-    </section>
-  );
-});
-
-const Approval = memo(function Approval({
-  request,
-  busy,
-  onRespond,
-}: {
-  readonly request: PendingApprovalRequest;
-  readonly busy: boolean;
-  readonly onRespond: (decision: ProviderApprovalDecision) => void;
-}) {
-  const canAccept = request.requestKind !== "file-change";
-  return (
-    <section className="decision approval" aria-labelledby="active-approval">
-      <header className="decision-head">
-        <span className="decision-tag">provider permission</span>
-        <span className="decision-count">{request.requestKind}</span>
-      </header>
-      <h2 id="active-approval">
-        {canAccept
-          ? "Grillme needs permission to inspect the repository"
-          : "Grillme tried to change a file"}
-      </h2>
-      <pre className="approval-detail">{request.detail}</pre>
-      <footer className="decision-foot approval-actions">
-        <span>
-          {canAccept
-            ? "Review the command before allowing it."
-            : "Write requests are blocked to keep this interview read-only."}
-        </span>
-        <span className="approval-buttons">
+    <header className="chrome-bar hairline-b relative z-10 flex items-center justify-center pt-[max(0.5rem,env(safe-area-inset-top))] pb-1.5">
+      <div className="absolute left-2 flex items-center">
+        {showNew ? (
           <button
             type="button"
-            className="lock lock-muted"
-            disabled={busy}
-            onClick={() => onRespond("decline")}
+            aria-label="Start a new grill"
+            onClick={onNewGrill}
+            className="pressable flex size-9 items-center justify-center rounded-full text-tint transition-colors hover:bg-muted"
           >
-            deny
+            <SquarePenIcon className="size-[22px]" strokeWidth={1.75} />
           </button>
-          {canAccept ? (
-            <button
-              type="button"
-              className="lock"
-              disabled={busy}
-              onClick={() => onRespond("accept")}
-            >
-              {busy ? "sending…" : "allow once"}
-            </button>
-          ) : null}
-        </span>
-      </footer>
-    </section>
-  );
-});
-
-/* ── plan pane ──────────────────────────────────────────────────────────── */
-
-function PlanLine({ line }: { readonly line: string }) {
-  if (line.startsWith("### ")) return <span className="pl pl-h3">{line}</span>;
-  if (line.startsWith("## ")) return <span className="pl pl-h2">{line}</span>;
-  if (line.startsWith("# ")) return <span className="pl pl-h1">{line}</span>;
-  if (line.startsWith("- ")) return <span className="pl pl-li">{line}</span>;
-  if (line.startsWith("_")) return <span className="pl pl-dim">{line}</span>;
-  return <span className="pl">{line || " "}</span>;
-}
-
-function PlanPane({
-  markdown,
-  filename,
-  live,
-  status,
-  canWrite,
-  onWrite,
-}: {
-  readonly markdown: string;
-  readonly filename: string;
-  readonly live: boolean;
-  readonly status: string | null;
-  readonly canWrite: boolean;
-  readonly onWrite: () => void;
-}) {
-  const lines = useMemo(() => markdown.split("\n"), [markdown]);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const count = lines.length;
-
-  useEffect(() => {
-    const node = bodyRef.current;
-    if (node) node.scrollTop = node.scrollHeight;
-  }, [count]);
-
-  return (
-    <aside className="plan">
-      <header className="plan-head">
-        <span className="plan-file">{live ? filename : "plan.md"}</span>
-        <span className="plan-meta">{live ? `${count} lines` : "not started"}</span>
-      </header>
-      <div className="plan-body" ref={bodyRef}>
-        {live ? (
-          <pre className="plan-buffer">
-            {lines.map((line, index) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <PlanLine key={index} line={line} />
-            ))}
-            <span className="caret" aria-hidden="true" />
-          </pre>
-        ) : (
-          <p className="plan-empty">
-            The plan writes itself here. Every answer you lock in becomes a line another agent can
-            execute.
-          </p>
-        )}
+        ) : null}
       </div>
-      <button type="button" className="plan-write" disabled={!canWrite} onClick={onWrite}>
-        {status ?? `write ${filename}`}
+
+      <button
+        type="button"
+        onClick={onOpenDetails}
+        className="pressable flex flex-col items-center gap-1 rounded-lg px-3 py-0.5"
+      >
+        <Sigil className="size-[30px]" />
+        <span className="flex items-center gap-0.5 text-[11px] leading-[13px] tracking-[-0.01em]">
+          grillme
+          <ChevronRightIcon className="size-2.5 text-muted-foreground" strokeWidth={2.5} />
+        </span>
+        <span className="sr-only">Open details</span>
       </button>
-    </aside>
+
+      <div className="absolute right-2 flex items-center">
+        <button
+          type="button"
+          aria-label="Details"
+          onClick={onOpenDetails}
+          className="pressable flex size-9 items-center justify-center rounded-full text-tint transition-colors hover:bg-muted"
+        >
+          <InfoIcon className="size-[22px]" strokeWidth={1.75} />
+        </button>
+      </div>
+
+      <span className="sr-only">{subtitle}</span>
+    </header>
   );
 }
 
@@ -424,9 +211,7 @@ export function App() {
   const [selectedOptions, setSelectedOptions] = useState<ReadonlyArray<string>>([]);
   const [planStatus, setPlanStatus] = useState<string | null>(null);
   const [planFile] = useState(() => handoffFilename());
-
-  const streamRef = useRef<HTMLDivElement>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const choices = useMemo(() => modelChoices(config), [config]);
   const selectedChoice = useMemo(
@@ -452,31 +237,41 @@ export function App() {
   const activeQuestion = pendingRequest?.questions[questionIndex] ?? null;
   const running = Boolean(threadId) && (!thread || thread.session?.status === "running");
 
-  const stream = useMemo<ReadonlyArray<StreamItem>>(() => {
-    const items: StreamItem[] = [];
+  // Every answered question becomes the pair it always was in the interview:
+  // the question they were asked, then the answer they gave.
+  const rows = useMemo<ReadonlyArray<Row>>(() => {
+    const items: Row[] = [];
     for (const message of thread?.messages ?? []) {
       const text = message.role === "user" ? displayUserMessage(message.text) : message.text;
       if (!text.trim()) continue;
       if (message.role !== "user" && message.role !== "assistant") continue;
       items.push({
-        kind: "said",
         key: message.id,
-        role: message.role,
+        side: message.role === "user" ? "end" : "start",
         text: text.trim(),
-        streaming: message.streaming,
         at: message.createdAt,
+        streaming: message.streaming,
+        divider: null,
       });
     }
-    let locked = 0;
     for (const entry of transcript) {
       if (entry.answer === null) continue;
-      locked += 1;
+      const base = `${entry.requestId}:${entry.question.id}`;
       items.push({
-        kind: "locked",
-        key: `${entry.requestId}:${entry.question.id}`,
-        entry,
-        index: locked,
+        key: `${base}:q`,
+        side: "start",
+        text: entry.question.question,
         at: entry.askedAt,
+        streaming: false,
+        divider: entry.question.header,
+      });
+      items.push({
+        key: `${base}:a`,
+        side: "end",
+        text: answerText(entry.answer),
+        at: `${entry.askedAt}~`,
+        streaming: false,
+        divider: null,
       });
     }
     return items.toSorted((left, right) => left.at.localeCompare(right.at));
@@ -575,15 +370,6 @@ export function App() {
     setDraftAnswers({});
     setSelectedOptions([]);
   }, [pendingRequest?.requestId]);
-
-  useEffect(() => {
-    const node = streamRef.current;
-    if (!node) return;
-    node.scrollTo({
-      top: node.scrollHeight,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-    });
-  }, [stream.length, pendingRequest?.requestId, questionIndex, running]);
 
   const startGrill = useCallback(
     (text: string) => {
@@ -799,14 +585,14 @@ export function App() {
 
   const writePlan = useCallback(() => {
     if (!rpc || !config || !thread) return;
-    setPlanStatus("writing…");
+    setPlanStatus("Saving…");
     void rpc
       .writeFile({
         cwd: config.cwd,
         relativePath: planFile,
         contents: planMarkdown,
       })
-      .then((result) => setPlanStatus(`saved ${result.relativePath}`))
+      .then((result) => setPlanStatus(`Saved ${result.relativePath}`))
       .catch((cause) => {
         setPlanStatus(null);
         setError(formatError(cause));
@@ -820,184 +606,154 @@ export function App() {
     setDraft("");
     setError(null);
     setPlanStatus(null);
-    composerRef.current?.focus();
   }, []);
 
-  useLayoutEffect(() => {
-    const node = composerRef.current;
-    if (!node) return;
-    node.style.height = "0px";
-    node.style.height = `${Math.min(node.scrollHeight, 200)}px`;
-  }, [draft]);
-
   const placeholder = !threadId
-    ? "Describe what you want to build, change, or decide…"
+    ? "What are we pressure-testing?"
     : activeQuestion
-      ? "…or answer in your own words"
-      : "Add context, correct an assumption, push back…";
+      ? "Answer in your own words"
+      : "Message";
 
   const busy = starting || running;
+  // Whatever trails the thread decides whether the last bubble keeps its tail.
+  const trailingSide: "start" | "end" | null =
+    activeQuestion || pendingApproval || busy ? "start" : null;
+  const lastRow = rows.at(-1);
+  const openedAt = rows[0]?.at ?? now();
 
   return (
-    <div className="shell">
-      <header className="bar">
-        <div className="bar-brand">
-          <Sigil />
-          <span className="wordmark">grillme</span>
-        </div>
-        <div className="bar-meta">
-          <span className="crumb" title={config?.cwd ?? "Waiting for the local server"}>
-            {shortPath(config?.cwd ?? null)}
-          </span>
-          <span className="crumb-sep" aria-hidden="true">
-            ·
-          </span>
-          <span className="crumb">read-only</span>
-        </div>
-        <div className="bar-right">
-          {threadId ? (
-            <button type="button" className="ghost" onClick={reset}>
-              new grill
-            </button>
-          ) : null}
-          <StatusLamp state={connection} />
-        </div>
-      </header>
+    <div className="stage">
+      <div className="phone">
+        <NavBar
+          subtitle={shortPath(config?.cwd ?? null)}
+          showNew={Boolean(threadId)}
+          onNewGrill={reset}
+          onOpenDetails={() => setDetailsOpen(true)}
+        />
 
-      <div className="stage">
-        <div className="console">
-          <main className="stream" ref={streamRef}>
-            <div className="stream-inner">
-              <section className="boot" aria-label="Session start">
-                <p className="boot-line">
-                  <b>grillme</b> — one hard question at a time, until the plan has no blanks.
-                </p>
-                <p className="boot-line boot-dim">
-                  It reads your repo to check facts. It never edits your code. You make every call.
-                </p>
-                {!threadId ? (
-                  <p className="boot-line boot-cue">What are we pressure-testing?</p>
+        <MessageScrollerProvider autoScroll>
+          <MessageScroller>
+            {/* Messages has no visible scrollbar; the thread is the only surface. */}
+            <MessageScrollerViewport className="overflow-x-hidden">
+              <MessageScrollerContent className="gap-2 px-3.5 py-4">
+                <MessageScrollerItem messageId="intro">
+                  <div className="flex flex-col gap-3 pb-2">
+                    <DayDivider label="Today" time={clockTime(openedAt)} />
+                    <SystemNote>
+                      grillme asks one hard question at a time until the plan has no blanks. It
+                      reads your repository to check facts. It never writes to it.
+                    </SystemNote>
+                  </div>
+                </MessageScrollerItem>
+
+                {rows.map((row, index) => {
+                  const next = rows[index + 1];
+                  const nextSide = next ? next.side : trailingSide;
+                  return (
+                    <MessageScrollerItem
+                      key={row.key}
+                      messageId={row.key}
+                      scrollAnchor={row.side === "end"}
+                    >
+                      {row.divider ? (
+                        <Marker variant="separator" className="mt-2 mb-2 px-4">
+                          <MarkerContent className="text-[11px] font-medium text-muted-foreground">
+                            {row.divider}
+                          </MarkerContent>
+                        </Marker>
+                      ) : null}
+                      <ChatBubble
+                        side={row.side}
+                        text={row.text}
+                        streaming={row.streaming}
+                        tail={nextSide !== row.side}
+                        footer={
+                          row.key === lastRow?.key && row.side === "end" && !row.streaming
+                            ? "Delivered"
+                            : undefined
+                        }
+                      />
+                    </MessageScrollerItem>
+                  );
+                })}
+
+                {activeQuestion && pendingRequest ? (
+                  <MessageScrollerItem messageId={`q:${pendingRequest.requestId}:${questionIndex}`}>
+                    <Question
+                      key={`${pendingRequest.requestId}:${activeQuestion.id}`}
+                      question={activeQuestion}
+                      questionIndex={questionIndex}
+                      questionCount={pendingRequest.questions.length}
+                      selected={selectedOptions}
+                      busy={answering}
+                      onPick={pickOption}
+                      onSend={() => submitAnswer()}
+                    />
+                  </MessageScrollerItem>
+                ) : pendingApproval ? (
+                  <MessageScrollerItem messageId={`a:${pendingApproval.requestId}`}>
+                    <Approval
+                      request={pendingApproval}
+                      busy={approving}
+                      onRespond={respondToApproval}
+                    />
+                  </MessageScrollerItem>
+                ) : busy ? (
+                  <MessageScrollerItem messageId="typing">
+                    <div className="flex flex-col gap-1.5">
+                      <TypingBubble />
+                      <SystemNote className="justify-start px-3">
+                        {starting ? "Lighting the grill" : workingStatus}
+                      </SystemNote>
+                    </div>
+                  </MessageScrollerItem>
                 ) : null}
-              </section>
 
-              {stream.map((item) =>
-                item.kind === "said" ? (
-                  <Said
-                    key={item.key}
-                    role={item.role}
-                    text={item.text}
-                    streaming={item.streaming}
-                  />
-                ) : (
-                  <Locked key={item.key} entry={item.entry} index={item.index} />
-                ),
-              )}
-
-              {activeQuestion && pendingRequest ? (
-                <Decision
-                  key={`${pendingRequest.requestId}:${activeQuestion.id}`}
-                  question={activeQuestion}
-                  questionIndex={questionIndex}
-                  questionCount={pendingRequest.questions.length}
-                  decisionNumber={
-                    transcript.filter((entry) => entry.answer !== null).length + questionIndex + 1
-                  }
-                  selected={selectedOptions}
-                  busy={answering}
-                  onToggle={pickOption}
-                  onSubmit={() => submitAnswer()}
-                />
-              ) : pendingApproval ? (
-                <Approval
-                  request={pendingApproval}
-                  busy={approving}
-                  onRespond={respondToApproval}
-                />
-              ) : busy ? (
-                <Thinking
-                  note={starting ? "lighting the grill" : workingStatus}
-                />
-              ) : null}
-
-              {error ? (
-                <p className="stream-error" role="alert">
-                  <span aria-hidden="true">!</span> {error}
-                </p>
-              ) : null}
-            </div>
-          </main>
-
-          <footer className="composer">
-            <form
-              className="composer-input"
-              onSubmit={(event) => {
-                event.preventDefault();
-                submitComposer();
-              }}
-            >
-              <span className="composer-sigil" aria-hidden="true">
-                ❯
-              </span>
-              <textarea
-                ref={composerRef}
-                autoFocus
-                rows={1}
-                value={draft}
-                spellCheck={false}
-                placeholder={placeholder}
-                aria-label={placeholder}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey) {
-                    event.preventDefault();
-                    submitComposer();
-                  }
-                }}
-              />
-              <button
-                type="submit"
-                className="send"
-                disabled={!draft.trim() || connection !== "ready" || !selectedChoice}
-              >
-                ⏎
-              </button>
-            </form>
-            <div className="composer-foot">
-              <label className="picker">
-                <span>interviewer</span>
-                <select
-                  value={selectedModelKey}
-                  disabled={Boolean(threadId)}
-                  onChange={(event) => setSelectedModelKey(event.target.value)}
-                >
-                  {choices.length === 0 ? <option value="">no models configured</option> : null}
-                  {choices.map((choice) => (
-                    <option key={choice.key} value={choice.key}>
-                      {choice.providerName} · {choice.modelName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <span className="hint">
-                <kbd>⏎</kbd> send <kbd>⇧⏎</kbd> newline
-                {activeQuestion ? (
-                  <>
-                    {" "}
-                    <kbd>A–{OPTION_KEYS[activeQuestion.options.length - 1]}</kbd> pick
-                  </>
+                {error ? (
+                  <MessageScrollerItem messageId="error">
+                    <SystemNote className="text-destructive">
+                      <span role="alert" className="text-destructive">
+                        {error}
+                      </span>
+                    </SystemNote>
+                  </MessageScrollerItem>
                 ) : null}
-              </span>
-            </div>
-          </footer>
-        </div>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton className="rounded-full" />
+          </MessageScroller>
+        </MessageScrollerProvider>
 
-        <PlanPane
-          markdown={planMarkdown}
-          filename={planFile}
-          live={Boolean(threadId)}
-          status={planStatus}
+        <Composer
+          value={draft}
+          onChange={setDraft}
+          onSubmit={submitComposer}
+          placeholder={placeholder}
+          disabled={connection !== "ready" || !selectedChoice}
+        />
+
+        <DetailsSheet
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          connectionLabel={
+            connection === "ready"
+              ? "Connected"
+              : connection === "connecting"
+                ? "Connecting…"
+                : "Not reachable"
+          }
+          workspace={shortPath(config?.cwd ?? null)}
+          choices={choices}
+          selectedModelKey={selectedModelKey}
+          onSelectModel={setSelectedModelKey}
+          modelLocked={Boolean(threadId)}
+          planMarkdown={planMarkdown}
+          planFile={planFile}
+          planStarted={Boolean(threadId)}
+          planStatus={planStatus}
           canWrite={Boolean(thread)}
-          onWrite={writePlan}
+          onWritePlan={writePlan}
+          onNewGrill={reset}
         />
       </div>
     </div>

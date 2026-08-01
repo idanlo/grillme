@@ -1,0 +1,358 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+/* Hover affordances and keycaps only exist where there is a real cursor. */
+@custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
+
+/* ─────────────────────────────────────────────────────────────────────────
+   grillme — iMessage
+   The whole surface is a faithful iOS Messages thread: SF type, 18px
+   bubbles with a tail on the last of each group, hairline chrome, and a
+   single tint (iOS blue) doing all the work.
+   ───────────────────────────────────────────────────────────────────────── */
+
+@theme inline {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui,
+    sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  /* iOS system colors, exposed so utilities can reach them. */
+  --color-tint: var(--tint);
+  --color-bubble-in: var(--bubble-in);
+  --color-bubble-in-foreground: var(--bubble-in-foreground);
+  --color-chrome: var(--chrome);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Emil's stronger curves. The built-in easings are too weak to read. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-pop: cubic-bezier(0.2, 1.25, 0.4, 1);
+}
+
+:root {
+  /* Light — iOS Messages on white. */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  /* Grouped-list rows sit lighter than the grouped background, iOS-style. */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+
+  /* systemBlue #007AFF — the sent bubble and every tappable thing. */
+  --tint: oklch(0.6 0.208 258.3);
+  --primary: oklch(0.6 0.208 258.3);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Received bubble #E9E9EB */
+  --bubble-in: oklch(0.929 0.002 286);
+  --bubble-in-foreground: oklch(0 0 0);
+
+  --secondary: oklch(0.929 0.002 286);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.96 0.002 286);
+  --muted-foreground: oklch(0.664 0.008 286); /* secondaryLabel #8E8E93 */
+  --accent: oklch(0.96 0.002 286);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.586 0.222 27.1); /* systemRed #FF3B30 */
+
+  --border: oklch(0 0 0 / 12%);
+  --input: oklch(0 0 0 / 14%);
+  --ring: oklch(0.6 0.208 258.3);
+
+  /* Nav bar and composer bar — translucent chrome over the thread. */
+  --chrome: oklch(0.98 0 0 / 78%);
+  --stage: oklch(0.93 0.003 286);
+
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.21 0.003 286);
+  --popover-foreground: oklch(1 0 0);
+
+  /* systemBlue dark #0A84FF */
+  --tint: oklch(0.638 0.196 256.5);
+  --primary: oklch(0.638 0.196 256.5);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Received bubble #26262A */
+  --bubble-in: oklch(0.264 0.003 286);
+  --bubble-in-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.264 0.003 286);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.22 0.003 286);
+  --muted-foreground: oklch(0.702 0.008 286); /* #98989F */
+  --accent: oklch(0.264 0.003 286);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.652 0.216 25.5); /* systemRed dark #FF453A */
+
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.638 0.196 256.5);
+
+  --chrome: oklch(0.09 0 0 / 72%);
+  --stage: oklch(0.055 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+    height: 100%;
+    /* iOS text rendering: no synthetic weights, tightened tracking. */
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    height: 100%;
+    margin: 0;
+    min-width: 320px;
+    overscroll-behavior: none;
+  }
+
+  #root {
+    height: 100%;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--tint) 28%, transparent);
+  }
+}
+
+@layer components {
+  /* ── the phone column ─────────────────────────────────────────────────
+     Everything lives in one mobile-width column. On a wide screen the
+     column lifts off a neutral stage so it reads as a device, without
+     drawing a fake bezel. */
+  .stage {
+    height: 100%;
+  }
+
+  .phone {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    height: 100%;
+    max-width: 430px;
+    margin-inline: auto;
+    background: var(--background);
+    isolation: isolate;
+  }
+
+  @media (min-width: 520px) and (min-height: 620px) {
+    .stage {
+      background: var(--stage);
+      padding: 24px 16px;
+    }
+
+    .phone {
+      height: 100%;
+      border-radius: 34px;
+      border: 1px solid var(--border);
+      box-shadow:
+        0 1px 2px oklch(0 0 0 / 8%),
+        0 32px 64px -24px oklch(0 0 0 / 40%);
+      overflow: hidden;
+    }
+  }
+
+  /* ── bubble tails ─────────────────────────────────────────────────────
+     The one detail that makes a chat read as iMessage rather than "a chat
+     app". Two pseudo-elements: one paints the curl in the bubble colour,
+     the second masks it back out in the page colour. Only the last bubble
+     of a group gets one. */
+  .tail::before,
+  .tail::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    height: 20px;
+    pointer-events: none;
+  }
+
+  .tail::before {
+    width: 20px;
+  }
+
+  .tail::after {
+    background: var(--background);
+    width: 26px;
+  }
+
+  .tail-start::before {
+    left: -6px;
+    background: var(--bubble-in);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 18px;
+  }
+
+  .tail-start::after {
+    left: -26px;
+    border-bottom-right-radius: 12px;
+  }
+
+  .tail-end::before {
+    right: -6px;
+    background: var(--tint);
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 18px;
+  }
+
+  .tail-end::after {
+    right: -26px;
+    border-bottom-left-radius: 12px;
+  }
+
+  /* ── entrances ────────────────────────────────────────────────────────
+     Bubbles arrive with a short pop from their own tail corner. Nothing
+     starts at scale 0; nothing runs past 300ms. */
+  .pop-in {
+    animation: bubble-pop 240ms var(--ease-pop) both;
+  }
+
+  .pop-in-start {
+    transform-origin: 0% 100%;
+  }
+
+  .pop-in-end {
+    transform-origin: 100% 100%;
+  }
+
+  @keyframes bubble-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.92) translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .chip-in {
+    animation: chip-in 260ms var(--ease-out-strong) both;
+  }
+
+  @keyframes chip-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Three-dot typing indicator, straight from Messages. */
+  .typing-dot {
+    animation: typing 1.35s ease-in-out infinite;
+  }
+
+  @keyframes typing {
+    0%,
+    60%,
+    100% {
+      opacity: 0.35;
+      transform: translateY(0) scale(0.86);
+    }
+    30% {
+      opacity: 1;
+      transform: translateY(-2px) scale(1);
+    }
+  }
+}
+
+@layer utilities {
+  /* iOS chrome: translucent bar with a hairline that never grows past 1px. */
+  .chrome-bar {
+    background: var(--chrome);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  .hairline-b {
+    box-shadow: 0 0.5px 0 0 var(--border);
+  }
+
+  .hairline-t {
+    box-shadow: 0 -0.5px 0 0 var(--border);
+  }
+
+  /* Presses. Every tappable surface answers the finger. */
+  .pressable {
+    transition: transform 160ms var(--ease-out-strong);
+  }
+
+  .pressable:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Unlayered so it outranks the sheet's own utilities: on a wide screen the
+   sheet belongs to the phone, not the viewport. */
+@media (min-width: 520px) and (min-height: 620px) {
+  [data-slot="sheet-content"][data-side="bottom"] {
+    bottom: 24px;
+    max-height: calc(100% - 48px);
+    border-end-start-radius: 33px;
+    border-end-end-radius: 33px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop-in,
+  .chip-in {
+    animation: none;
+  }
+
+  .typing-dot {
+    animation-duration: 2.4s;
+  }
+
+  .pressable:active {
+    transform: none;
+  }
+}

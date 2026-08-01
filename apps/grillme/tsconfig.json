@@ -2,6 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "erasableSyntaxOnly": false,
