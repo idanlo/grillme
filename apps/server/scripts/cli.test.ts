@@ -1,7 +1,7 @@
 import { expect, it } from "vite-plus/test";
 
 import packageJson from "../package.json" with { type: "json" };
-import { createVpPmPublishArgs } from "./cli.ts";
+import { createPublishProcessOptions, createVpPmPublishArgs } from "./cli.ts";
 
 it("publishes the Grillme CLI package under its workspace identity", () => {
   expect(packageJson.name).toBe("grillme");
@@ -17,4 +17,14 @@ it("publishes the Grillme CLI package under its workspace identity", () => {
       dryRun: true,
     }),
   ).toContain("grillme");
+});
+
+it("inherits stdin so pnpm can request a publish-time OTP", () => {
+  expect(createPublishProcessOptions("/repo", true, false)).toEqual({
+    cwd: "/repo",
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+    shell: false,
+  });
 });

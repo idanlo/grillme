@@ -144,6 +144,18 @@ export const createVpPmPublishArgs = (config: PublishCommandConfig): ReadonlyArr
   return args;
 };
 
+export const createPublishProcessOptions = (
+  repoRoot: string,
+  verbose: boolean,
+  shell: boolean,
+) => ({
+  cwd: repoRoot,
+  stdin: "inherit" as const,
+  stdout: verbose ? ("inherit" as const) : ("ignore" as const),
+  stderr: "inherit" as const,
+  shell,
+});
+
 const publishCmd = Command.make(
   "publish",
   {
@@ -219,12 +231,11 @@ const publishCmd = Command.make(
 
             yield* Effect.log(`[cli] Running: vp pm ${args.join(" ")}`);
             yield* runCommand(
-              ChildProcess.make(spawnCommand.command, spawnCommand.args, {
-                cwd: repoRoot,
-                stdout: config.verbose ? "inherit" : "ignore",
-                stderr: "inherit",
-                shell: spawnCommand.shell,
-              }),
+              ChildProcess.make(
+                spawnCommand.command,
+                spawnCommand.args,
+                createPublishProcessOptions(repoRoot, config.verbose, spawnCommand.shell),
+              ),
             );
           }),
         // Release: restore every file even if applying overrides or publishing fails.
