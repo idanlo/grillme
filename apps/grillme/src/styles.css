@@ -143,6 +143,12 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.workspace-path-unavailable {
+  color: var(--muted);
+}
+.workspace-path-unavailable svg {
+  color: var(--muted);
+}
 .connection-pill {
   gap: 8px;
   border: 1px solid var(--line);

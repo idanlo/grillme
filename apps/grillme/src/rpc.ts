@@ -54,7 +54,7 @@ async function bootstrapBrowserSession(): Promise<void> {
   if (session.authenticated) return;
   if (!credential) {
     throw new Error(
-      "This Grillme link is missing its local pairing token. Restart `npx grillme` and use the URL it opens.",
+      "This Grillme link is missing its local pairing token. Restart `pnpm dev` or `npx grillme` and use the URL it opens.",
     );
   }
 

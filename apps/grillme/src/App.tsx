@@ -96,14 +96,26 @@ function ConnectionPill({ state }: { readonly state: ConnectionState }) {
   );
 }
 
-function WorkspacePath({ path }: { readonly path: string | null }) {
-  if (!path) return null;
+function WorkspacePath({
+  path,
+  state,
+}: {
+  readonly path: string | null;
+  readonly state: ConnectionState;
+}) {
+  const displayPath =
+    path ?? (state === "connecting" ? "Connecting to workspace…" : "Connect to reveal path");
+  const title = path ?? "Use the paired URL opened by `pnpm dev` or `npx grillme`.";
 
   return (
-    <div className="workspace-path" title={path} aria-label={`Current workspace: ${path}`}>
+    <div
+      className={`workspace-path${path ? "" : " workspace-path-unavailable"}`}
+      title={title}
+      aria-label={path ? `Current workspace: ${path}` : displayPath}
+    >
       <FolderIcon aria-hidden="true" />
       <span className="workspace-path-label">cwd</span>
-      <span className="workspace-path-value">{path}</span>
+      <span className="workspace-path-value">{displayPath}</span>
     </div>
   );
 }
@@ -586,7 +598,7 @@ export function App() {
       <header className="topbar">
         <Brand />
         <div className="topbar-actions">
-          <WorkspacePath path={config?.cwd ?? null} />
+          <WorkspacePath path={config?.cwd ?? null} state={connection} />
           {thread ? (
             <button type="button" className="ghost-button" onClick={reset}>
               <RotateCcwIcon /> New grill
