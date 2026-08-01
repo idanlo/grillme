@@ -20,6 +20,8 @@ import { ServerCliBuildAssetMissingError, ServerCliCommandExitError } from "./cl
 interface PackageJson {
   name: string;
   description: string;
+  readme: string;
+  readmeFilename: string;
   license: string;
   homepage: string;
   bugs: {
@@ -39,6 +41,14 @@ interface PackageJson {
   dependencies: Record<string, string>;
   overrides: Record<string, string>;
 }
+
+export const PUBLISHED_README_FILENAME = "README.md";
+
+export const withReadmeMetadata = <T extends object>(pkg: T, readme: string) => ({
+  ...pkg,
+  readme,
+  readmeFilename: PUBLISHED_README_FILENAME,
+});
 
 const PackageJsonPrettyJson = fromJsonStringPretty(Schema.Unknown);
 const encodePackageJson = Schema.encodeEffect(PackageJsonPrettyJson);
@@ -189,30 +199,34 @@ const publishCmd = Command.make(
           const workspaceConfig = yield* readWorkspaceConfig();
           const workspaceCatalog = workspaceConfig.catalog ?? {};
           const workspaceOverrides = workspaceConfig.overrides ?? {};
-          const pkg: PackageJson = {
-            name: serverPackageJson.name,
-            description: serverPackageJson.description,
-            license: serverPackageJson.license,
-            homepage: serverPackageJson.homepage,
-            bugs: serverPackageJson.bugs,
-            keywords: serverPackageJson.keywords,
-            repository: serverPackageJson.repository,
-            bin: serverPackageJson.bin,
-            type: serverPackageJson.type,
-            version,
-            engines: serverPackageJson.engines,
-            files: serverPackageJson.files,
-            dependencies: resolveCatalogDependencies(
-              serverPackageJson.dependencies,
-              workspaceCatalog,
-              "apps/server",
-            ),
-            overrides: resolveCatalogDependencies(
-              workspaceOverrides,
-              workspaceCatalog,
-              "apps/server",
-            ),
-          };
+          const readme = yield* fs.readFileString(path.join(serverDir, PUBLISHED_README_FILENAME));
+          const pkg: PackageJson = withReadmeMetadata(
+            {
+              name: serverPackageJson.name,
+              description: serverPackageJson.description,
+              license: serverPackageJson.license,
+              homepage: serverPackageJson.homepage,
+              bugs: serverPackageJson.bugs,
+              keywords: serverPackageJson.keywords,
+              repository: serverPackageJson.repository,
+              bin: serverPackageJson.bin,
+              type: serverPackageJson.type,
+              version,
+              engines: serverPackageJson.engines,
+              files: serverPackageJson.files,
+              dependencies: resolveCatalogDependencies(
+                serverPackageJson.dependencies,
+                workspaceCatalog,
+                "apps/server",
+              ),
+              overrides: resolveCatalogDependencies(
+                workspaceOverrides,
+                workspaceCatalog,
+                "apps/server",
+              ),
+            },
+            readme,
+          );
 
           return {
             packageJsonString: yield* encodePackageJson(pkg),
