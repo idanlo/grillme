@@ -18,6 +18,7 @@ import {
   ChevronRightIcon,
   DownloadIcon,
   FlameIcon,
+  FolderIcon,
   LoaderCircleIcon,
   RotateCcwIcon,
   SearchIcon,
@@ -91,6 +92,18 @@ function ConnectionPill({ state }: { readonly state: ConnectionState }) {
     <div className={`connection-pill connection-${state}`}>
       <span className="connection-dot" />
       {state === "ready" ? "Local agent ready" : state === "connecting" ? "Heating up" : "Offline"}
+    </div>
+  );
+}
+
+function WorkspacePath({ path }: { readonly path: string | null }) {
+  if (!path) return null;
+
+  return (
+    <div className="workspace-path" title={path} aria-label={`Current workspace: ${path}`}>
+      <FolderIcon aria-hidden="true" />
+      <span className="workspace-path-label">cwd</span>
+      <span className="workspace-path-value">{path}</span>
     </div>
   );
 }
@@ -573,6 +586,7 @@ export function App() {
       <header className="topbar">
         <Brand />
         <div className="topbar-actions">
+          <WorkspacePath path={config?.cwd ?? null} />
           {thread ? (
             <button type="button" className="ghost-button" onClick={reset}>
               <RotateCcwIcon /> New grill

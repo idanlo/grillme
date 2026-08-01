@@ -59,6 +59,7 @@ button {
 
 .brand,
 .topbar-actions,
+.workspace-path,
 .principles,
 .connection-pill,
 .ghost-button,
@@ -109,6 +110,38 @@ button {
 
 .topbar-actions {
   gap: 12px;
+  min-width: 0;
+}
+.workspace-path {
+  gap: 7px;
+  min-width: 0;
+  max-width: min(42vw, 520px);
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--ash);
+  font:
+    400 11px/1.2 "JetBrains Mono",
+    monospace;
+}
+.workspace-path svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: var(--ember-light);
+}
+.workspace-path-label {
+  flex: 0 0 auto;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.workspace-path-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .connection-pill {
   gap: 8px;
@@ -743,6 +776,13 @@ button:disabled {
     font-size: 0;
     padding: 9px;
   }
+  .workspace-path {
+    max-width: 37vw;
+    padding: 8px;
+  }
+  .workspace-path-label {
+    display: none;
+  }
   .ghost-button {
     font-size: 0;
   }
@@ -797,6 +837,15 @@ button:disabled {
     align-items: flex-start;
     flex-direction: column;
     gap: 3px;
+  }
+}
+
+@media (max-width: 400px) {
+  .brand-word {
+    display: none;
+  }
+  .workspace-path {
+    max-width: 44vw;
   }
 }
 
