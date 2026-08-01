@@ -12,6 +12,12 @@ export interface PendingQuestionRequest {
   questions: ReadonlyArray<UserInputQuestion>;
 }
 
+export interface PendingApprovalRequest {
+  requestId: string;
+  requestKind: "command" | "file-read" | "file-change";
+  detail: string;
+}
+
 function orderedActivities(activities: ReadonlyArray<OrchestrationThreadActivity>) {
   return [...activities].toSorted((left, right) => {
     const sequence =
@@ -130,6 +136,49 @@ export function derivePendingRequest(
     if (activity.kind === "user-input.resolved") pending.delete(requestId);
   }
   return pending.values().next().value ?? null;
+}
+
+export function derivePendingApproval(
+  activities: ReadonlyArray<OrchestrationThreadActivity>,
+): PendingApprovalRequest | null {
+  const pending = new Map<string, PendingApprovalRequest>();
+  for (const activity of orderedActivities(activities)) {
+    const payload = payloadOf(activity);
+    const requestId = typeof payload?.requestId === "string" ? payload.requestId : null;
+    if (!requestId) continue;
+    if (activity.kind === "approval.requested") {
+      const requestKind = payload?.requestKind;
+      pending.set(requestId, {
+        requestId,
+        requestKind:
+          requestKind === "file-read" || requestKind === "file-change" ? requestKind : "command",
+        detail:
+          typeof payload?.detail === "string" && payload.detail.trim()
+            ? payload.detail.trim()
+            : activity.summary,
+      });
+    }
+    if (
+      activity.kind === "approval.resolved" ||
+      activity.kind === "provider.approval.respond.failed"
+    ) {
+      pending.delete(requestId);
+    }
+  }
+  return pending.values().next().value ?? null;
+}
+
+export function deriveWorkingStatus(
+  activities: ReadonlyArray<OrchestrationThreadActivity>,
+): string {
+  const ordered = orderedActivities(activities);
+  for (let index = ordered.length - 1; index >= 0; index -= 1) {
+    const activity = ordered[index];
+    if (!activity || activity.kind !== "task.progress") continue;
+    const summary = activity.summary.trim();
+    if (summary) return summary;
+  }
+  return "reading the repository for facts";
 }
 
 function answerMarkdown(answer: GrillAnswer["answer"]): string {

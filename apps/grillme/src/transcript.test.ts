@@ -2,7 +2,13 @@ import type { OrchestrationThreadActivity } from "@grillme/contracts";
 import { EventId, TurnId } from "@grillme/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
-import { buildHandoffMarkdown, derivePendingRequest, deriveTranscript } from "./transcript";
+import {
+  buildHandoffMarkdown,
+  derivePendingApproval,
+  derivePendingRequest,
+  deriveTranscript,
+  deriveWorkingStatus,
+} from "./transcript";
 
 const activity = (
   kind: string,
@@ -51,5 +57,39 @@ describe("Grillme transcript", () => {
     expect(buildHandoffMarkdown({ prompt: "Build it", transcript })).toContain(
       "### 1. Where should this run?",
     );
+  });
+
+  it("surfaces and clears provider approval requests", () => {
+    const requested = activity(
+      "approval.requested",
+      {
+        requestId: "approval-1",
+        requestKind: "command",
+        detail: "rg --files apps/grillme",
+      },
+      1,
+    );
+    expect(derivePendingApproval([requested])).toEqual({
+      requestId: "approval-1",
+      requestKind: "command",
+      detail: "rg --files apps/grillme",
+    });
+
+    const resolved = activity(
+      "approval.resolved",
+      { requestId: "approval-1", decision: "accept" },
+      2,
+    );
+    expect(derivePendingApproval([resolved, requested])).toBeNull();
+  });
+
+  it("uses the latest provider progress instead of a permanent generic message", () => {
+    expect(
+      deriveWorkingStatus([
+        activity("task.progress", {}, 1),
+        { ...activity("task.progress", {}, 2), summary: "Reading apps/grillme/src/App.tsx" },
+        activity("context-window.updated", {}, 3),
+      ]),
+    ).toBe("Reading apps/grillme/src/App.tsx");
   });
 });

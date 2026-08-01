@@ -9,6 +9,7 @@ import {
   type ModelSelection,
   type OrchestrationProjectShell,
   type OrchestrationThread,
+  type ProviderApprovalDecision,
   type ServerConfig,
   type ServerConfigStreamEvent,
   type UserInputQuestion,
@@ -19,10 +20,13 @@ import { buildFirstTurn, displayUserMessage } from "./protocol";
 import { connectRpc, type GrillmeRpc } from "./rpc";
 import {
   buildHandoffMarkdown,
+  derivePendingApproval,
   derivePendingRequest,
   deriveTranscript,
+  deriveWorkingStatus,
   handoffFilename,
   type GrillAnswer,
+  type PendingApprovalRequest,
 } from "./transcript";
 
 type ConnectionState = "connecting" | "ready" | "error";
@@ -280,6 +284,59 @@ const Decision = memo(function Decision({
   );
 });
 
+const Approval = memo(function Approval({
+  request,
+  busy,
+  onRespond,
+}: {
+  readonly request: PendingApprovalRequest;
+  readonly busy: boolean;
+  readonly onRespond: (decision: ProviderApprovalDecision) => void;
+}) {
+  const canAccept = request.requestKind !== "file-change";
+  return (
+    <section className="decision approval" aria-labelledby="active-approval">
+      <header className="decision-head">
+        <span className="decision-tag">provider permission</span>
+        <span className="decision-count">{request.requestKind}</span>
+      </header>
+      <h2 id="active-approval">
+        {canAccept
+          ? "Grillme needs permission to inspect the repository"
+          : "Grillme tried to change a file"}
+      </h2>
+      <pre className="approval-detail">{request.detail}</pre>
+      <footer className="decision-foot approval-actions">
+        <span>
+          {canAccept
+            ? "Review the command before allowing it."
+            : "Write requests are blocked to keep this interview read-only."}
+        </span>
+        <span className="approval-buttons">
+          <button
+            type="button"
+            className="lock lock-muted"
+            disabled={busy}
+            onClick={() => onRespond("decline")}
+          >
+            deny
+          </button>
+          {canAccept ? (
+            <button
+              type="button"
+              className="lock"
+              disabled={busy}
+              onClick={() => onRespond("accept")}
+            >
+              {busy ? "sending…" : "allow once"}
+            </button>
+          ) : null}
+        </span>
+      </footer>
+    </section>
+  );
+});
+
 /* ── plan pane ──────────────────────────────────────────────────────────── */
 
 function PlanLine({ line }: { readonly line: string }) {
@@ -359,6 +416,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [answering, setAnswering] = useState(false);
+  const [approving, setApproving] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, string | ReadonlyArray<string>>>(
     {},
@@ -381,6 +439,14 @@ export function App() {
   );
   const pendingRequest = useMemo(
     () => derivePendingRequest(thread?.activities ?? []),
+    [thread?.activities],
+  );
+  const pendingApproval = useMemo(
+    () => derivePendingApproval(thread?.activities ?? []),
+    [thread?.activities],
+  );
+  const workingStatus = useMemo(
+    () => deriveWorkingStatus(thread?.activities ?? []),
     [thread?.activities],
   );
   const activeQuestion = pendingRequest?.questions[questionIndex] ?? null;
@@ -652,6 +718,25 @@ export function App() {
     ],
   );
 
+  const respondToApproval = useCallback(
+    (decision: ProviderApprovalDecision) => {
+      if (!rpc || !threadId || !pendingApproval || approving) return;
+      setApproving(true);
+      void rpc
+        .dispatch({
+          type: "thread.approval.respond",
+          commandId: id(CommandId),
+          threadId,
+          requestId: ApprovalRequestId.make(pendingApproval.requestId),
+          decision,
+          createdAt: now(),
+        })
+        .catch((cause) => setError(formatError(cause)))
+        .finally(() => setApproving(false));
+    },
+    [approving, pendingApproval, rpc, threadId],
+  );
+
   const toggleOption = useCallback(
     (label: string) => {
       if (!activeQuestion) return;
@@ -822,9 +907,15 @@ export function App() {
                   onToggle={pickOption}
                   onSubmit={() => submitAnswer()}
                 />
+              ) : pendingApproval ? (
+                <Approval
+                  request={pendingApproval}
+                  busy={approving}
+                  onRespond={respondToApproval}
+                />
               ) : busy ? (
                 <Thinking
-                  note={starting ? "lighting the grill" : "reading the repository for facts"}
+                  note={starting ? "lighting the grill" : workingStatus}
                 />
               ) : null}
 

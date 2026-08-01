@@ -504,6 +504,31 @@ input {
   color: var(--ash);
 }
 
+.approval-detail {
+  max-height: 150px;
+  overflow: auto;
+  margin: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.2);
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.approval-actions {
+  align-items: center;
+}
+
+.approval-buttons {
+  display: flex;
+  gap: 7px;
+}
+
 .lock {
   border: 1px solid rgba(255, 122, 69, 0.5);
   border-radius: 5px;
@@ -516,6 +541,12 @@ input {
     background-color 140ms ease,
     transform 140ms var(--out),
     opacity 140ms ease;
+}
+
+.lock.lock-muted {
+  border-color: var(--rule);
+  background: transparent;
+  color: var(--dim);
 }
 
 .lock:active {
