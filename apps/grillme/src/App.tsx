@@ -745,6 +745,7 @@ export function App() {
           workspace={shortPath(config?.cwd ?? null)}
           choices={choices}
           selectedModelKey={selectedModelKey}
+          selectedModelName={selectedChoice?.modelName ?? null}
           onSelectModel={setSelectedModelKey}
           modelLocked={Boolean(threadId)}
           planMarkdown={planMarkdown}

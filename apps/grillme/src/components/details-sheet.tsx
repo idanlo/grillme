@@ -62,6 +62,7 @@ export function DetailsSheet({
   workspace,
   choices,
   selectedModelKey,
+  selectedModelName,
   onSelectModel,
   modelLocked,
   planMarkdown,
@@ -78,6 +79,7 @@ export function DetailsSheet({
   readonly workspace: string;
   readonly choices: ReadonlyArray<ModelChoice>;
   readonly selectedModelKey: string;
+  readonly selectedModelName: string | null;
   readonly onSelectModel: (key: string) => void;
   readonly modelLocked: boolean;
   readonly planMarkdown: string;
@@ -156,7 +158,9 @@ export function DetailsSheet({
                     size="sm"
                     className="max-w-[58%] border-none bg-transparent px-0 text-[15px] text-muted-foreground dark:bg-transparent dark:hover:bg-transparent"
                   >
-                    <SelectValue placeholder="No models configured" />
+                    <SelectValue placeholder="No models configured">
+                      {selectedModelName ?? undefined}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {choices.map((choice) => (

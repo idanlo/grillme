@@ -2,12 +2,13 @@
 
 Grillme is a local-first question-and-answer workspace for turning an underspecified idea into a clear, auditable handoff. It runs a browser UI on the current machine and uses an installed coding-agent provider to inspect the repository and ask one decision question at a time.
 
+Run it from the repository you want to pressure-test:
+
 ```bash
-pnpm install
-pnpm dev
+npx grillme
 ```
 
-The CLI starts a loopback-only server and opens the Grillme client. Runtime state is kept under the selected Grillme home (`GRILLME_HOME` or the worktree-local `.t3` development home). No cloud account, relay, native client, or remote service is required.
+The command starts a loopback-only server and opens the Grillme client in your browser. Runtime state stays on your machine. No cloud account, relay, native client, or remote service is required.
 
 ## How a session works
 
@@ -25,6 +26,11 @@ Grillme sessions default to plan interaction mode and approval-required runtime 
 Grillme supports locally installed and authenticated Codex, Claude, Cursor, Grok, and OpenCode providers. Provider CLIs are not bundled with Grillme.
 
 ## Development
+
+```bash
+pnpm install
+pnpm dev
+```
 
 Focused checks:
 

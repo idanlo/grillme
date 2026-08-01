@@ -11,7 +11,7 @@ import {
 it("publishes the Grillme CLI package under its workspace identity", () => {
   expect(packageJson.name).toBe("grillme");
   expect("private" in packageJson).toBe(false);
-  expect(packageJson.version).toBe("0.1.1");
+  expect(packageJson.version).toBe("0.1.2");
   expect(packageJson.license).toBe("MIT");
   expect(packageJson.bin).toEqual({ grillme: "./dist/bin.mjs" });
   expect(
