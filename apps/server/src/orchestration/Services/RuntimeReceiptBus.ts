@@ -62,5 +62,5 @@ export interface RuntimeReceiptBusShape {
 }
 
 export class RuntimeReceiptBus extends Context.Service<RuntimeReceiptBus, RuntimeReceiptBusShape>()(
-  "@grillme/server/orchestration/Services/RuntimeReceiptBus",
+  "grillme/orchestration/Services/RuntimeReceiptBus",
 ) {}

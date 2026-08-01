@@ -186,4 +186,4 @@ export interface ProjectionSnapshotQueryShape {
 export class ProjectionSnapshotQuery extends Context.Service<
   ProjectionSnapshotQuery,
   ProjectionSnapshotQueryShape
->()("@grillme/server/orchestration/Services/ProjectionSnapshotQuery") {}
+>()("grillme/orchestration/Services/ProjectionSnapshotQuery") {}

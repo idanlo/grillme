@@ -92,6 +92,4 @@ export interface ProjectionThreadMessageRepositoryShape {
 export class ProjectionThreadMessageRepository extends Context.Service<
   ProjectionThreadMessageRepository,
   ProjectionThreadMessageRepositoryShape
->()(
-  "@grillme/server/persistence/Services/ProjectionThreadMessages/ProjectionThreadMessageRepository",
-) {}
+>()("grillme/persistence/Services/ProjectionThreadMessages/ProjectionThreadMessageRepository") {}

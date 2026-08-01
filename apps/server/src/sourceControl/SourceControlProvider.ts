@@ -127,4 +127,4 @@ export class SourceControlProvider extends Context.Service<
       readonly force?: boolean;
     }) => Effect.Effect<void, SourceControlProviderError>;
   }
->()("@grillme/server/sourceControl/SourceControlProvider") {}
+>()("grillme/sourceControl/SourceControlProvider") {}

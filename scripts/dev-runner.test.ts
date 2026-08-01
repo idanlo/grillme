@@ -85,7 +85,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           "run",
           "--filter=@grillme/contracts",
           "--filter=@grillme/grillme",
-          "--filter=@grillme/server",
+          "--filter=grillme",
           "--parallel",
           "dev",
         ]);

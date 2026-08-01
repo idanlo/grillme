@@ -276,7 +276,7 @@ export class EnvironmentAuth extends Context.Service<
       baseUrl: string,
     ) => Effect.Effect<string, ServerAuthInternalError>;
   }
->()("@grillme/server/auth/EnvironmentAuth") {}
+>()("grillme/auth/EnvironmentAuth") {}
 
 export function toBootstrapExchangeError(
   cause: PairingGrantStore.BootstrapCredentialError,

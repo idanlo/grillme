@@ -81,7 +81,7 @@ export interface ProviderVersionCacheEntry {
 }
 
 export const ProviderVersionCache = Context.Reference<Map<string, ProviderVersionCacheEntry>>(
-  "@grillme/server/providerMaintenance/ProviderVersionCache",
+  "grillme/providerMaintenance/ProviderVersionCache",
   {
     defaultValue: () => new Map(),
   },

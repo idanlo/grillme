@@ -84,4 +84,4 @@ export interface ProviderInstanceRegistryShape {
 export class ProviderInstanceRegistry extends Context.Service<
   ProviderInstanceRegistry,
   ProviderInstanceRegistryShape
->()("@grillme/server/provider/Services/ProviderInstanceRegistry") {}
+>()("grillme/provider/Services/ProviderInstanceRegistry") {}

@@ -78,4 +78,4 @@ export interface ProjectionProjectRepositoryShape {
 export class ProjectionProjectRepository extends Context.Service<
   ProjectionProjectRepository,
   ProjectionProjectRepositoryShape
->()("@grillme/server/persistence/Services/ProjectionProjects/ProjectionProjectRepository") {}
+>()("grillme/persistence/Services/ProjectionProjects/ProjectionProjectRepository") {}

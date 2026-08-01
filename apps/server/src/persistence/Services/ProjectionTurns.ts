@@ -167,4 +167,4 @@ export interface ProjectionTurnRepositoryShape {
 export class ProjectionTurnRepository extends Context.Service<
   ProjectionTurnRepository,
   ProjectionTurnRepositoryShape
->()("@grillme/server/persistence/Services/ProjectionTurns/ProjectionTurnRepository") {}
+>()("grillme/persistence/Services/ProjectionTurns/ProjectionTurnRepository") {}

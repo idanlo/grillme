@@ -50,7 +50,7 @@ export class ProjectSetupScriptRunner extends Context.Service<
       input: ProjectSetupScriptRunnerInput,
     ) => Effect.Effect<ProjectSetupScriptRunnerResult, ProjectSetupScriptRunnerError>;
   }
->()("@grillme/server/project/ProjectSetupScriptRunner") {}
+>()("grillme/project/ProjectSetupScriptRunner") {}
 
 export const layer = Layer.succeed(ProjectSetupScriptRunner, {
   runForThread: (_input) => Effect.succeed({ status: "no-script" as const }),

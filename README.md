@@ -31,7 +31,7 @@ Focused checks:
 ```bash
 pnpm --filter @grillme/grillme test
 pnpm --filter @grillme/grillme typecheck
-pnpm --filter @grillme/server build:bundle
+pnpm --filter grillme build:bundle
 pnpm --filter @grillme/grillme build
 ```
 

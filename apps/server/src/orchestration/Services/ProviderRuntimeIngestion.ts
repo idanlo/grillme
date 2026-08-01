@@ -38,6 +38,4 @@ export interface ProviderRuntimeIngestionShape {
 export class ProviderRuntimeIngestionService extends Context.Service<
   ProviderRuntimeIngestionService,
   ProviderRuntimeIngestionShape
->()(
-  "@grillme/server/orchestration/Services/ProviderRuntimeIngestion/ProviderRuntimeIngestionService",
-) {}
+>()("grillme/orchestration/Services/ProviderRuntimeIngestion/ProviderRuntimeIngestionService") {}

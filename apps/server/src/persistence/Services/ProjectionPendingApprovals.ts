@@ -91,5 +91,5 @@ export class ProjectionPendingApprovalRepository extends Context.Service<
   ProjectionPendingApprovalRepository,
   ProjectionPendingApprovalRepositoryShape
 >()(
-  "@grillme/server/persistence/Services/ProjectionPendingApprovals/ProjectionPendingApprovalRepository",
+  "grillme/persistence/Services/ProjectionPendingApprovals/ProjectionPendingApprovalRepository",
 ) {}

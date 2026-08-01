@@ -39,4 +39,4 @@ export interface OrchestrationProjectionPipelineShape {
 export class OrchestrationProjectionPipeline extends Context.Service<
   OrchestrationProjectionPipeline,
   OrchestrationProjectionPipelineShape
->()("@grillme/server/orchestration/Services/ProjectionPipeline/OrchestrationProjectionPipeline") {}
+>()("grillme/orchestration/Services/ProjectionPipeline/OrchestrationProjectionPipeline") {}

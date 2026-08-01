@@ -97,4 +97,4 @@ export interface ProviderAdapterRegistryShape {
 export class ProviderAdapterRegistry extends Context.Service<
   ProviderAdapterRegistry,
   ProviderAdapterRegistryShape
->()("@grillme/server/provider/Services/ProviderAdapterRegistry") {}
+>()("grillme/provider/Services/ProviderAdapterRegistry") {}

@@ -19,6 +19,13 @@ import { ServerCliBuildAssetMissingError, ServerCliCommandExitError } from "./cl
 
 interface PackageJson {
   name: string;
+  description: string;
+  license: string;
+  homepage: string;
+  bugs: {
+    url: string;
+  };
+  keywords: string[];
   repository: {
     type: string;
     url: string;
@@ -32,8 +39,6 @@ interface PackageJson {
   dependencies: Record<string, string>;
   overrides: Record<string, string>;
 }
-
-export const PUBLISHED_PACKAGE_NAME = "grillme";
 
 const PackageJsonPrettyJson = fromJsonStringPretty(Schema.Unknown);
 const encodePackageJson = Schema.encodeEffect(PackageJsonPrettyJson);
@@ -125,7 +130,7 @@ export const createVpPmPublishArgs = (config: PublishCommandConfig): ReadonlyArr
   const args = [
     "publish",
     "--filter",
-    "./apps/server",
+    serverPackageJson.name,
     "--access",
     config.access,
     "--tag",
@@ -173,7 +178,12 @@ const publishCmd = Command.make(
           const workspaceCatalog = workspaceConfig.catalog ?? {};
           const workspaceOverrides = workspaceConfig.overrides ?? {};
           const pkg: PackageJson = {
-            name: PUBLISHED_PACKAGE_NAME,
+            name: serverPackageJson.name,
+            description: serverPackageJson.description,
+            license: serverPackageJson.license,
+            homepage: serverPackageJson.homepage,
+            bugs: serverPackageJson.bugs,
+            keywords: serverPackageJson.keywords,
             repository: serverPackageJson.repository,
             bin: serverPackageJson.bin,
             type: serverPackageJson.type,

@@ -73,7 +73,7 @@ export class ServerConfig extends Context.Service<
     readonly autoBootstrapProjectFromCwd: boolean;
     readonly logWebSocketEvents: boolean;
   }
->()("@grillme/server/config/ServerConfig") {
+>()("grillme/config/ServerConfig") {
   /** @deprecated Import and use `layerTest` from this module. */
   static readonly layerTest = (
     cwd: string,

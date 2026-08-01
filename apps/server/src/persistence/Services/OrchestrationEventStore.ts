@@ -68,4 +68,4 @@ export interface OrchestrationEventStoreShape {
 export class OrchestrationEventStore extends Context.Service<
   OrchestrationEventStore,
   OrchestrationEventStoreShape
->()("@grillme/server/persistence/Services/OrchestrationEventStore") {}
+>()("grillme/persistence/Services/OrchestrationEventStore") {}

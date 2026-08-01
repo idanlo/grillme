@@ -219,7 +219,7 @@ export class PairingGrantStore extends Context.Service<
       },
     ) => Effect.Effect<BootstrapGrant, BootstrapCredentialError>;
   }
->()("@grillme/server/auth/PairingGrantStore") {}
+>()("grillme/auth/PairingGrantStore") {}
 
 const DEFAULT_ONE_TIME_TOKEN_TTL_MINUTES = Duration.minutes(5);
 // A dev server's startup token is read off a log by whoever (or whatever) is

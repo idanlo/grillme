@@ -49,4 +49,4 @@ export interface ProviderInstanceRegistryMutatorShape {
 export class ProviderInstanceRegistryMutator extends Context.Service<
   ProviderInstanceRegistryMutator,
   ProviderInstanceRegistryMutatorShape
->()("@grillme/server/provider/Services/ProviderInstanceRegistryMutator") {}
+>()("grillme/provider/Services/ProviderInstanceRegistryMutator") {}

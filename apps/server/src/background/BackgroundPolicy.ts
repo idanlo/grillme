@@ -12,7 +12,7 @@ export class BackgroundPolicy extends Context.Service<
   {
     readonly shouldRunScopeWork: (...args: ReadonlyArray<unknown>) => Effect.Effect<boolean>;
   }
->()("@grillme/server/background/BackgroundPolicy") {}
+>()("grillme/background/BackgroundPolicy") {}
 
 export const layer = Layer.succeed(
   BackgroundPolicy,

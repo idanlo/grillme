@@ -117,5 +117,5 @@ export interface ProviderServiceShape {
  * ProviderService - Service tag for provider orchestration.
  */
 export class ProviderService extends Context.Service<ProviderService, ProviderServiceShape>()(
-  "@grillme/server/provider/Services/ProviderService",
+  "grillme/provider/Services/ProviderService",
 ) {}

@@ -1,6 +1,18 @@
 {
-  "name": "@grillme/server",
-  "version": "0.0.31",
+  "name": "grillme",
+  "version": "0.1.0",
+  "description": "Turn an underspecified coding idea into an implementation-ready Markdown handoff.",
+  "keywords": [
+    "ai",
+    "cli",
+    "coding-agent",
+    "interview",
+    "planning"
+  ],
+  "homepage": "https://github.com/idanlo/grillme#readme",
+  "bugs": {
+    "url": "https://github.com/idanlo/grillme/issues"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,6 +29,8 @@
   "scripts": {
     "dev": "node --watch src/bin.ts",
     "build:bundle": "vp pack",
+    "release:dry-run": "node scripts/cli.ts publish --dry-run --verbose",
+    "release:npm": "node scripts/cli.ts publish --verbose",
     "start": "node dist/bin.mjs",
     "typecheck": "tsgo --noEmit",
     "test": "vp test run"

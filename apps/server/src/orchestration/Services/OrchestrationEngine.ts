@@ -79,4 +79,4 @@ export interface OrchestrationEngineShape {
 export class OrchestrationEngineService extends Context.Service<
   OrchestrationEngineService,
   OrchestrationEngineShape
->()("@grillme/server/orchestration/Services/OrchestrationEngine/OrchestrationEngineService") {}
+>()("grillme/orchestration/Services/OrchestrationEngine/OrchestrationEngineService") {}

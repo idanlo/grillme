@@ -69,5 +69,5 @@ export class OrchestrationCommandReceiptRepository extends Context.Service<
   OrchestrationCommandReceiptRepository,
   OrchestrationCommandReceiptRepositoryShape
 >()(
-  "@grillme/server/persistence/Services/OrchestrationCommandReceipts/OrchestrationCommandReceiptRepository",
+  "grillme/persistence/Services/OrchestrationCommandReceipts/OrchestrationCommandReceiptRepository",
 ) {}

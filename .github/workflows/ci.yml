@@ -27,7 +27,7 @@ jobs:
           run-install: true
 
       - name: Build server bundle
-        run: vp run --filter @grillme/server build:bundle
+        run: vp run --filter grillme build:bundle
 
       - name: Build local client
         run: vp run --filter @grillme/grillme build

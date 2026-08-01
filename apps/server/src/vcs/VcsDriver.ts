@@ -77,4 +77,4 @@ export class VcsDriver extends Context.Service<
       input: ReviewDiffPreviewInput,
     ) => Effect.Effect<ReviewDiffPreviewResult, VcsError>;
   }
->()("@grillme/server/vcs/VcsDriver") {}
+>()("grillme/vcs/VcsDriver") {}

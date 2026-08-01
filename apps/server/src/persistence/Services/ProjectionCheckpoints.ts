@@ -92,4 +92,4 @@ export interface ProjectionCheckpointRepositoryShape {
 export class ProjectionCheckpointRepository extends Context.Service<
   ProjectionCheckpointRepository,
   ProjectionCheckpointRepositoryShape
->()("@grillme/server/persistence/Services/ProjectionCheckpoints/ProjectionCheckpointRepository") {}
+>()("grillme/persistence/Services/ProjectionCheckpoints/ProjectionCheckpointRepository") {}

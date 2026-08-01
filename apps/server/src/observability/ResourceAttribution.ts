@@ -33,7 +33,7 @@ export class ResourceAttribution extends Context.Service<
     readonly record: (input: ResourceAttributionRecord) => Effect.Effect<void>;
     readonly snapshot: Effect.Effect<ResourceAttributionSnapshot>;
   }
->()("@grillme/server/observability/ResourceAttribution") {}
+>()("grillme/observability/ResourceAttribution") {}
 
 function key(input: Pick<ResourceAttributionRecord, "component" | "operation">): string {
   return `${input.component}\u0000${input.operation}`;

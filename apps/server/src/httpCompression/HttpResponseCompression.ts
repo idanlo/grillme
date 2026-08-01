@@ -11,7 +11,7 @@ export class HttpResponseCompression extends Context.Service<
       options: HttpServerResponse.Options,
     ) => HttpServerResponse.HttpServerResponse;
   }
->()("@grillme/server/httpCompression/HttpResponseCompression") {}
+>()("grillme/httpCompression/HttpResponseCompression") {}
 
 export const layerNode = Layer.effect(
   HttpResponseCompression,

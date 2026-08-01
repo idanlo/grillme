@@ -75,6 +75,4 @@ export interface ProjectionThreadSessionRepositoryShape {
 export class ProjectionThreadSessionRepository extends Context.Service<
   ProjectionThreadSessionRepository,
   ProjectionThreadSessionRepositoryShape
->()(
-  "@grillme/server/persistence/Services/ProjectionThreadSessions/ProjectionThreadSessionRepository",
-) {}
+>()("grillme/persistence/Services/ProjectionThreadSessions/ProjectionThreadSessionRepository") {}

@@ -67,4 +67,4 @@ export interface ProviderSessionDirectoryShape {
 export class ProviderSessionDirectory extends Context.Service<
   ProviderSessionDirectory,
   ProviderSessionDirectoryShape
->()("@grillme/server/provider/Services/ProviderSessionDirectory") {}
+>()("grillme/provider/Services/ProviderSessionDirectory") {}
