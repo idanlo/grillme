@@ -58,7 +58,7 @@ export const autoBootstrapProjectFromCwdFlag = Flag.boolean("auto-bootstrap-proj
 );
 export const logWebSocketEventsFlag = Flag.boolean("log-websocket-events").pipe(
   Flag.withDescription(
-    "Emit server-side logs for outbound WebSocket push traffic (equivalent to T3CODE_LOG_WS_EVENTS).",
+    "Emit server-side logs for outbound WebSocket push traffic (equivalent to GRILLME_LOG_WS_EVENTS).",
   ),
   Flag.withAlias("log-ws-events"),
   Flag.optional,
@@ -102,8 +102,16 @@ const EnvServerConfig = Config.all({
     Config.option,
     Config.map(Option.getOrUndefined),
   ),
-  port: Config.port("T3CODE_PORT").pipe(Config.option, Config.map(Option.getOrUndefined)),
-  host: Config.string("T3CODE_HOST").pipe(Config.option, Config.map(Option.getOrUndefined)),
+  port: Config.port("GRILLME_PORT").pipe(
+    Config.orElse(() => Config.port("T3CODE_PORT")),
+    Config.option,
+    Config.map(Option.getOrUndefined),
+  ),
+  host: Config.string("GRILLME_HOST").pipe(
+    Config.orElse(() => Config.string("T3CODE_HOST")),
+    Config.option,
+    Config.map(Option.getOrUndefined),
+  ),
   grillmeHome: Config.string("GRILLME_HOME").pipe(Config.option, Config.map(Option.getOrUndefined)),
   devUrl: Config.url("VITE_DEV_SERVER_URL").pipe(Config.option, Config.map(Option.getOrUndefined)),
   devAllowedOrigins: Config.string("T3CODE_DEV_ALLOWED_ORIGINS").pipe(
@@ -115,7 +123,8 @@ const EnvServerConfig = Config.all({
         .filter((entry) => entry.length > 0),
     ),
   ),
-  noBrowser: Config.boolean("T3CODE_NO_BROWSER").pipe(
+  noBrowser: Config.boolean("GRILLME_NO_BROWSER").pipe(
+    Config.orElse(() => Config.boolean("T3CODE_NO_BROWSER")),
     Config.option,
     Config.map(Option.getOrUndefined),
   ),
@@ -123,11 +132,13 @@ const EnvServerConfig = Config.all({
     Config.option,
     Config.map(Option.getOrUndefined),
   ),
-  autoBootstrapProjectFromCwd: Config.boolean("T3CODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD").pipe(
+  autoBootstrapProjectFromCwd: Config.boolean("GRILLME_AUTO_BOOTSTRAP_PROJECT_FROM_CWD").pipe(
+    Config.orElse(() => Config.boolean("T3CODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD")),
     Config.option,
     Config.map(Option.getOrUndefined),
   ),
-  logWebSocketEvents: Config.boolean("T3CODE_LOG_WS_EVENTS").pipe(
+  logWebSocketEvents: Config.boolean("GRILLME_LOG_WS_EVENTS").pipe(
+    Config.orElse(() => Config.boolean("T3CODE_LOG_WS_EVENTS")),
     Config.option,
     Config.map(Option.getOrUndefined),
   ),

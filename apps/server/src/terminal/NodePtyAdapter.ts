@@ -118,15 +118,17 @@ export const make = Effect.fn("NodePtyAdapter.make")(function* (
   const platform = yield* HostProcessPlatform;
   const architecture = yield* HostProcessArchitecture;
 
-  const nodePty = yield* Effect.tryPromise({
-    try: loadNodePtyModule,
-    catch: (cause) =>
-      new NodePtyModuleLoadError({
-        platform,
-        architecture,
-        cause,
-      }),
-  }).pipe(Effect.orDie);
+  const loadNodePtyModuleCached = yield* Effect.cached(
+    Effect.tryPromise({
+      try: loadNodePtyModule,
+      catch: (cause) =>
+        new NodePtyModuleLoadError({
+          platform,
+          architecture,
+          cause,
+        }),
+    }).pipe(Effect.orDie),
+  );
 
   const ensureNodePtySpawnHelperExecutableCached = yield* Effect.cached(
     ensureNodePtySpawnHelperExecutable().pipe(
@@ -140,6 +142,7 @@ export const make = Effect.fn("NodePtyAdapter.make")(function* (
 
   return PtyAdapter.PtyAdapter.of({
     spawn: Effect.fn("NodePtyAdapter.spawn")(function* (input) {
+      const nodePty = yield* loadNodePtyModuleCached;
       yield* ensureNodePtySpawnHelperExecutableCached;
       const ptyProcess = yield* Effect.try({
         try: () =>

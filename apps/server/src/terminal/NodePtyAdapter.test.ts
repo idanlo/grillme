@@ -59,10 +59,20 @@ it.effect("spawns through the public adapter with the provided host references",
   }).pipe(Effect.provide(testLayer)),
 );
 
-it.effect("reports native module load failures as structured startup defects", () =>
+it.effect("defers native module loading until a terminal is spawned", () =>
   Effect.gen(function* () {
     const cause = new Error("native binding could not be loaded");
-    const exit = yield* NodePtyAdapter.make(() => Promise.reject(cause)).pipe(Effect.exit);
+    const adapter = yield* NodePtyAdapter.make(() => Promise.reject(cause));
+    const exit = yield* adapter
+      .spawn({
+        shell: "powershell.exe",
+        args: [],
+        cwd: "C:\\workspace",
+        cols: 120,
+        rows: 40,
+        env: {},
+      })
+      .pipe(Effect.exit);
 
     assert.isTrue(Exit.isFailure(exit));
     if (Exit.isFailure(exit)) {
