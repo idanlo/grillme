@@ -3,6 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./grillme": {
+      "types": "./src/grillme.ts",
+      "import": "./src/grillme.ts"
+    },
     "./projectFavicon": {
       "types": "./src/projectFavicon.ts",
       "import": "./src/projectFavicon.ts"

@@ -24,6 +24,7 @@ import * as Ref from "effect/Ref";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import type { OpencodeClient, Part, PermissionRequest, QuestionRequest } from "@opencode-ai/sdk/v2";
+import { GRILLME_SYSTEM_PROMPT } from "@grillme/shared/grillme";
 import { getModelSelectionStringOptionValue } from "@grillme/shared/model";
 
 import { resolveAttachmentPath } from "../../attachmentStore.ts";
@@ -1487,6 +1488,7 @@ export function makeOpenCodeAdapter(
           model: parsedModel,
           ...(context.activeAgent ? { agent: context.activeAgent } : {}),
           ...(context.activeVariant ? { variant: context.activeVariant } : {}),
+          system: GRILLME_SYSTEM_PROMPT,
           parts: [...(text ? [{ type: "text" as const, text }] : []), ...fileParts],
         }),
       ).pipe(

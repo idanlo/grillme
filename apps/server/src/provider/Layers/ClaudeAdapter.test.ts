@@ -21,6 +21,7 @@ import {
   ThreadId,
   ProviderInstanceId,
 } from "@grillme/contracts";
+import { GRILLME_SYSTEM_PROMPT } from "@grillme/shared/grillme";
 import { createModelSelection } from "@grillme/shared/model";
 import { assert, describe, it } from "@effect/vitest";
 import * as Context from "effect/Context";
@@ -348,6 +349,11 @@ describe("ClaudeAdapterLive", () => {
 
       const createInput = harness.getLastCreateQueryInput();
       assert.deepEqual(createInput?.options.settingSources, ["user", "project", "local"]);
+      assert.deepEqual(createInput?.options.systemPrompt, {
+        type: "preset",
+        preset: "claude_code",
+        append: GRILLME_SYSTEM_PROMPT,
+      });
       assert.equal(createInput?.options.permissionMode, "bypassPermissions");
       assert.equal(createInput?.options.allowDangerouslySkipPermissions, true);
     }).pipe(

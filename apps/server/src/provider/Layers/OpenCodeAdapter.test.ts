@@ -21,6 +21,7 @@ import {
   ProviderInstanceId,
   ThreadId,
 } from "@grillme/contracts";
+import { GRILLME_SYSTEM_PROMPT } from "@grillme/shared/grillme";
 import { createModelSelection } from "@grillme/shared/model";
 import { ServerConfig } from "../../config.ts";
 import { ServerSettingsService } from "../../serverSettings.ts";
@@ -378,6 +379,10 @@ it.layer(OpenCodeAdapterTestLayer)("OpenCodeAdapterLive", (it) => {
       NodeAssert.deepEqual(
         (runtimeMock.state.promptCalls[0] as { sessionID: string }).sessionID,
         "ses_persisted",
+      );
+      NodeAssert.equal(
+        (runtimeMock.state.promptCalls[0] as { system: string }).system,
+        GRILLME_SYSTEM_PROMPT,
       );
       NodeAssert.deepEqual(result.resumeCursor, {
         schemaVersion: 1,
@@ -851,6 +856,7 @@ it.layer(OpenCodeAdapterTestLayer)("OpenCodeAdapterLive", (it) => {
         },
         agent: "github-copilot",
         variant: "high",
+        system: GRILLME_SYSTEM_PROMPT,
         parts: [{ type: "text", text: "Fix it" }],
       });
     }).pipe(Effect.provide(adapterLayer));
@@ -893,6 +899,7 @@ it.layer(OpenCodeAdapterTestLayer)("OpenCodeAdapterLive", (it) => {
           providerID: "anthropic",
           modelID: "claude-sonnet-4-5",
         },
+        system: GRILLME_SYSTEM_PROMPT,
         parts: [{ type: "text", text: "Fix it" }],
       });
     }).pipe(Effect.provide(adapterLayer));

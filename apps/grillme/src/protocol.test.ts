@@ -1,3 +1,4 @@
+import { GRILLME_SYSTEM_PROMPT } from "@grillme/shared/grillme";
 import { describe, expect, it } from "vite-plus/test";
 
 import { buildFirstTurn, displayUserMessage } from "./protocol";
@@ -5,7 +6,7 @@ import { buildFirstTurn, displayUserMessage } from "./protocol";
 describe("Grillme protocol", () => {
   it("wraps the product rules and keeps the user's prompt recoverable", () => {
     const message = buildFirstTurn("Design a safer deploy flow");
-    expect(message).toContain("Ask exactly one question at a time");
+    expect(message).toContain(GRILLME_SYSTEM_PROMPT);
     expect(displayUserMessage(message)).toBe("Design a safer deploy flow");
   });
 
