@@ -19,6 +19,7 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import { ChildProcessSpawner } from "effect/unstable/process";
 
+import rootPackageJson from "../package.json" with { type: "json" };
 import {
   checkPortAvailabilityOnHosts,
   createDevRunnerEnv,
@@ -32,6 +33,11 @@ import {
 } from "./dev-runner.ts";
 
 const emptyConfigLayer = ConfigProvider.layer(ConfigProvider.fromEnv({ env: {} }));
+
+it("opens the authenticated Grillme URL from the root dev script", () => {
+  assert.equal(rootPackageJson.scripts.dev, "node scripts/dev-runner.ts dev --browser");
+});
+
 const netServiceLayer = Layer.succeed(NetService.NetService, {
   canListenOnHost: () => Effect.succeed(true),
   isPortAvailableOnLoopback: () => Effect.succeed(true),
@@ -79,7 +85,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           "run",
           "--filter=@grillme/contracts",
           "--filter=@grillme/grillme",
-          "--filter=t3",
+          "--filter=@grillme/server",
           "--parallel",
           "dev",
         ]);
